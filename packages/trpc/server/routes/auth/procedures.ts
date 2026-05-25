@@ -11,7 +11,7 @@ export const getSupportedAuthenticationProcedure = async () => {
 export const loginWithGoogleOauthProcedure = async ({ input, ctx }: { input: LoginWithGoogleOauthInputSchema, ctx: Context }) => {
   const { token } = input;
 
-  const { id, accessToken, refreshToken } = await userService.loginWithGoogleOauth(token);
+  const { user, accessToken, refreshToken } = await userService.loginWithGoogleOauth(token);
 
   ctx.createCookie("refreshToken", refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -21,14 +21,14 @@ export const loginWithGoogleOauthProcedure = async ({ input, ctx }: { input: Log
     path: "/",
   });
 
-  return { id, accessToken, is2FAEnabled: true };
+  return { user, accessToken, refreshToken };
 };
 
 export const loginWithEmailAndPasswordProcedure = async ({ input, ctx }: { input: LoginWithEmailAndPasswordInputType, ctx: Context }) => {
-  const { id, accessToken, refreshToken, is2FAEnabled } = await userService.loginWithEmailAndPassword(input);
+  const { user, accessToken, refreshToken, is2FAEnabled } = await userService.loginWithEmailAndPassword(input);
 
   if (is2FAEnabled) {
-    return { id, is2FAEnabled };
+    return { user, is2FAEnabled };
   };
 
   ctx.createCookie("refreshToken", refreshToken!, {
@@ -39,7 +39,7 @@ export const loginWithEmailAndPasswordProcedure = async ({ input, ctx }: { input
     path: "/",
   });
 
-  return { id, accessToken, is2FAEnabled: false };
+  return { user, accessToken, is2FAEnabled: false };
 };
 
 export const resend2FACodeProcedure = async ({ input }: { input: Resend2FACodeInputType }) => {
@@ -77,7 +77,7 @@ export const refreshAccessTokenProcedure = async ({ ctx }: { ctx: Context }) => 
     throw new Error("No refresh token found");
   }
 
-  const { id, accessToken, refreshToken: newRefreshToken } = await userService.refreshAccessToken(refreshToken);
+  const { user, accessToken, refreshToken: newRefreshToken } = await userService.refreshAccessToken(refreshToken);
   
   ctx.createCookie("refreshToken", newRefreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -86,8 +86,9 @@ export const refreshAccessTokenProcedure = async ({ ctx }: { ctx: Context }) => 
     sameSite: "strict",
     path: "/",
   });
+
   
-  return { id, accessToken };
+  return { user, accessToken };
 };
 
 export const profileProcedure = async ({ ctx }: { ctx: Context }) => {
@@ -105,15 +106,19 @@ export const enable2FAProcedure = async ({ ctx }: { ctx: Context }) => {
     throw new Error("No user found");
   }
 
-  const { email } = ctx.user;
+  const refreshToken = ctx.getCookie("refreshToken");
 
-  await userService.toggle2FA({ email });
+  if (!refreshToken) {
+    throw new Error("No refresh token found");
+  }
+
+  await userService.toggle2FA({ refreshToken });
 };
 
 export const verify2FACodeProcedure = async ({ input, ctx }: { input: Verify2FACodeInputType, ctx: Context }) => {
   const { id, twoFACode } = input;
 
-  const { id: userId, accessToken, refreshToken } = await userService.verify2FACode({ id, twoFACode });
+  const { user, accessToken, refreshToken } = await userService.verify2FACode({ id, twoFACode });
 
   ctx.createCookie("refreshToken", refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -123,7 +128,7 @@ export const verify2FACodeProcedure = async ({ input, ctx }: { input: Verify2FAC
     path: "/",
   });
 
-  return { id: userId, accessToken };
+  return { user, accessToken };
 }
 
 export const logoutProcedure = async ({ ctx }: { ctx: Context }) => {

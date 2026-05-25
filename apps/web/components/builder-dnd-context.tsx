@@ -14,7 +14,7 @@ import {
   defaultDropAnimationSideEffects
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useFormBuilder } from "../app/(protected)/dashboard/forms/[id]/workspace/context";
+import { useFormBuilder } from "./workspace/context";
 import { FormFieldType } from "@repo/services/form/model";
 import { IconTypography, IconNumber123, IconMail, IconPhone, IconMapPin, IconCheckbox, IconCircleDot, IconUpload, IconToggleLeft, IconCalendar, IconClock, IconForms } from "@tabler/icons-react";
 import { useCreateFormField, useReorderFormFields } from "~/hooks/api/form/form.hook";
@@ -76,7 +76,7 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
     if (active.data.current?.type === "ToolboxItem") {
       if (over.id === "canvas" || fields.find(f => f.id === over.id)) {
         const fieldType = active.data.current?.fieldType as FormFieldType["type"];
-        
+
         let newOrderIndex = 0;
         if (fields.length > 0) {
           const overIndex = fields.findIndex(f => f.id === over.id);
@@ -94,6 +94,7 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
         }
 
         const newField: FormFieldType = {
+          id: crypto.randomUUID(), // Add temporary ID so dnd-kit doesn't get stuck
           formId,
           label: `New ${fieldType}`,
           type: fieldType,
@@ -101,17 +102,19 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
           orderIndex: newOrderIndex,
           labelKey: `field_${Date.now()}`
         };
-        
+
         // Optimistic UI update
         addField(newField);
 
         try {
+          console.log(active, over);
           await createFieldAsync(newField);
         } catch (error) {
           toast.error("Failed to save new field to database.");
         }
       }
     } else if (active.data.current?.type === "Field") {
+      console.log(active, over);
       if (active.id !== over.id) {
         // Optimistic local reorder with fractional indexing
         const newOrderIndex = reorderFields(active.id as string, over.id as string);
@@ -119,9 +122,9 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
         if (newOrderIndex !== null) {
           try {
             // O(1) DB update
-            await reorderFieldsAsync({ 
-              formId, 
-              orders: [{ id: active.id as string, orderIndex: newOrderIndex }] 
+            await reorderFieldsAsync({
+              formId,
+              orders: [{ id: active.id as string, orderIndex: newOrderIndex }]
             });
           } catch (error) {
             toast.error("Failed to sync field order.");

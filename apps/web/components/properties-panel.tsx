@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useFormBuilder } from "../app/(protected)/dashboard/forms/[id]/workspace/context";
+import { useFormBuilder } from "./workspace/context";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Switch } from "~/components/ui/switch";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useUpdateFormField } from "~/hooks/api/form/form.hook";
 import { toast } from "sonner";
 
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { IconGripVertical } from "@tabler/icons-react";
+import { useUpdateFormField } from "~/hooks/api/form/form.hook";
 
 function SortableOption({ opt, idx, updateOption, removeOption }: any) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -29,23 +29,23 @@ function SortableOption({ opt, idx, updateOption, removeOption }: any) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group">
-      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 opacity-50 hover:opacity-100">
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group p-2 rounded-xl bg-background/40 border border-white/5 hover:border-primary/20 hover:bg-primary/5 hover:shadow-sm transition-all duration-300">
+      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 opacity-40 hover:opacity-100 hover:text-primary transition-colors">
         <IconGripVertical className="size-4" />
       </div>
       <Input
         value={opt.label}
         onChange={(e) => updateOption(idx, "label", e.target.value)}
-        className="h-8 flex-1"
+        className="h-8 flex-1 bg-background/50 border-white/10 focus:bg-background focus:border-primary/50 transition-colors"
         placeholder="Label"
       />
       <Input
         value={opt.value}
         onChange={(e) => updateOption(idx, "value", e.target.value)}
-        className="h-8 flex-1"
+        className="h-8 flex-1 bg-background/50 border-white/10 focus:bg-background focus:border-primary/50 transition-colors"
         placeholder="Value"
       />
-      <Button variant="ghost" size="icon" onClick={() => removeOption(idx)} className="h-8 w-8 text-destructive">
+      <Button variant="ghost" size="icon" onClick={() => removeOption(idx)} className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-destructive/10">
         <IconTrash className="size-4" />
       </Button>
     </div>
@@ -53,8 +53,9 @@ function SortableOption({ opt, idx, updateOption, removeOption }: any) {
 }
 
 export function PropertiesPanel() {
-  const { fields, selectedFieldId, updateField, formId } = useFormBuilder();
   const { updateFieldAsync } = useUpdateFormField();
+
+  const { fields, selectedFieldId, updateField, formId } = useFormBuilder();
 
   const selectedField = fields.find(f => f.id === selectedFieldId);
   const isInitialMount = useRef(true);
@@ -87,12 +88,16 @@ export function PropertiesPanel() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [selectedField, updateFieldAsync, formId]);
+  }, [selectedField, formId]);
 
   if (!selectedField) {
     return (
-      <div className="w-80 border-l bg-background/50 flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
-        <p>Select a field on the canvas to edit its properties.</p>
+      <div className="w-full h-full border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center text-muted-foreground rounded-2xl shadow-xl dark:bg-black/40">
+        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 ring-1 ring-primary/20">
+          <IconPlus className="size-8 text-primary/50" />
+        </div>
+        <p className="font-medium text-foreground">No field selected</p>
+        <p className="text-sm mt-2">Select a field on the canvas to edit its properties.</p>
       </div>
     );
   }
@@ -167,10 +172,13 @@ export function PropertiesPanel() {
   };
 
   return (
-    <div className="w-80 border-l bg-background/50 flex flex-col h-full overflow-y-auto">
-      <div className="p-4 border-b bg-card">
-        <h3 className="font-semibold">Field Properties</h3>
-        <p className="text-xs text-muted-foreground mt-1 capitalize">{selectedField.type.replace("_", " ")}</p>
+    <div className="w-full border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col h-full overflow-y-auto rounded-2xl shadow-xl dark:bg-black/40">
+      <div className="p-5 border-b border-white/10">
+        <h3 className="font-bold tracking-tight">Properties</h3>
+        <p className="text-xs text-muted-foreground mt-1 capitalize flex items-center gap-1">
+          <span className="inline-block size-2 rounded-full bg-primary/70"></span>
+          {selectedField.type.replace("_", " ")}
+        </p>
       </div>
 
       <div className="p-4 space-y-6 flex-1">
@@ -202,12 +210,12 @@ export function PropertiesPanel() {
         {hasOptions && (
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between">
-              <Label>Options</Label>
-              <Button variant="outline" size="sm" onClick={addOption} className="h-7 text-xs gap-1">
-                <IconPlus className="size-3" /> Add
+              <Label className="font-semibold">Options</Label>
+              <Button variant="outline" size="sm" onClick={addOption} className="h-7 text-xs gap-1 rounded-full hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all">
+                <IconPlus className="size-3" /> Add Option
               </Button>
             </div>
-            
+
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleOptionDragEnd}>
               <SortableContext items={(selectedField.options || []).map(o => o.id!)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-2">

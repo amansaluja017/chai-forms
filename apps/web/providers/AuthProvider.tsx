@@ -11,18 +11,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
         async function refreshToken() {
             try {
-                store.dispatch(refresh({ accessToken: store.getState().user.accessToken, loading: true }));
+                store.dispatch(refresh({ accessToken: store.getState().user.accessToken, loading: true, user: null }));
 
                 const response = await refreshAccessToken();
 
                 if (response.accessToken) {
-                    store.dispatch(refresh({ accessToken: response.accessToken, loading: false }))
+                    store.dispatch(refresh({ accessToken: response.accessToken, loading: false, user: response.user }))
                 }
             } catch (error) {
-                console.log("Not authenticated", error);
-                store.dispatch(refresh({ accessToken: null, loading: false }))
+                store.dispatch(refresh({ accessToken: null, loading: false, user: null }))
             } finally {
-                store.dispatch(refresh({ accessToken: store.getState().user.accessToken, loading: false }));
+                store.dispatch(refresh({ accessToken: store.getState().user.accessToken, loading: false, user: store.getState().user.user }));
             }
         }
 

@@ -1,6 +1,8 @@
+import type { User } from "@repo/services/user/model";
 
 export default async function refreshAccessToken(): Promise<{
-    accessToken: string;
+    accessToken: string | null;
+    user: User | null;
 }> {
     try {
         const response = await fetch("http://localhost:8000/api/authentication/refresh-token", {
@@ -13,11 +15,9 @@ export default async function refreshAccessToken(): Promise<{
         });
         const data = await response.json();
 
-        return { accessToken: data.accessToken };
+        return { accessToken: data.accessToken, user: data.user };
     } catch (error) {
-        console.log(error);
-
-        return { accessToken: "" };
+        return { accessToken: null, user: null };
     }
 
 };

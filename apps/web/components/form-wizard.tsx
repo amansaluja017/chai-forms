@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { IconCheck, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { Card, CardContent } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
+import { useEffect, useRef } from "react";
+import { useTrackFormView } from "~/hooks/api/analytics/analytics.hook";
 
 export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOutputType, isPreview?: boolean }) {
   const fields = form.fields || [];
@@ -22,6 +24,16 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
   const [isMockSubmitting, setIsMockSubmitting] = useState(false);
   
   const { submitResponseAsync, isPending } = useSubmitFormResponse();
+  const { trackViewAsync } = useTrackFormView();
+  const startTime = useRef(Date.now());
+  const hasTrackedView = useRef(false);
+
+  useEffect(() => {
+    if (!isPreview && !hasTrackedView.current && form.id) {
+      hasTrackedView.current = true;
+      trackViewAsync({ id: form.id }).catch(console.error);
+    }
+  }, [isPreview, form.id, trackViewAsync]);
 
   const isFormPending = isPending || isMockSubmitting;
 
@@ -65,9 +77,12 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
           value
         }));
 
+        const timeToComplete = Math.floor((Date.now() - startTime.current) / 1000);
+
         await submitResponseAsync({
           formId: form.id,
-          response: payload
+          response: payload,
+          timeToComplete
         });
         
         setIsSubmitted(true);
@@ -251,6 +266,44 @@ function renderFieldInput(field: any, value: string, onChange: (val: string) => 
             <option key={opt.id} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+      );
+
+    case "yes_no":
+      return (
+        <RadioGroup value={value} onValueChange={onChange} className="flex space-x-6 mt-2">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="true" id={`yes-${field.id}`} className="h-5 w-5" />
+            <Label htmlFor={`yes-${field.id}`} className="text-base cursor-pointer font-normal">
+              True
+            </Label>
+          </div>
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="false" id={`no-${field.id}`} className="h-5 w-5" />
+            <Label htmlFor={`no-${field.id}`} className="text-base cursor-pointer font-normal">
+              False
+            </Label>
+          </div>
+        </RadioGroup>
+      );
+
+    case "file":
+      return (
+        <div className="relative">
+          <Input
+            type="file"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                // In a real app this would upload to S3 and save the URL. 
+                // For now, we save the filename to satisfy the required field check.
+                onChange(file.name);
+              } else {
+                onChange("");
+              }
+            }}
+            className="text-lg py-3 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+          />
+        </div>
       );
 
     default:

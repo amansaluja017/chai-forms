@@ -38,18 +38,6 @@ export const useCreateForm = () => {
     };
 };
 
-export const useUpdateForm = () => {
-    const { mutate: updateForm, mutateAsync: updateFormAsync, isPending, isError, error } = trpc.form.updateForm.useMutation();
-
-    return {
-        updateForm,
-        updateFormAsync,
-        isPending,
-        isError,
-        error
-    };
-};
-
 export const useDeleteForm = () => {
     const { mutate: deleteForm, mutateAsync: deleteFormAsync, isPending, isError, error } = trpc.form.deleteForm.useMutation();
 
@@ -105,8 +93,8 @@ export const useCreateFormField = () => {
 };
 
 export const useUpdateFormField = () => {
-    const { mutateAsync: updateFieldAsync, isPending } = trpc.form.updateFormField.useMutation();
-    return { updateFieldAsync, isPending };
+    const { mutate: updateField, mutateAsync: updateFieldAsync, isPending, isError, error } = trpc.form.updateFormField.useMutation();
+    return { updateField, updateFieldAsync, isPending, isError, error };
 };
 
 export const useDeleteFormField = () => {
@@ -135,6 +123,16 @@ export const useGetPublicFormWorkspace = (id: string) => {
 };
 
 export const useSubmitFormResponse = () => {
-    const { mutateAsync: submitResponseAsync, isPending, isError, error } = trpc.form.submitForm.useMutation();
-    return { submitResponseAsync, isPending, isError, error };
+    const { mutate: submitResponse, mutateAsync: submitResponseAsync, isPending } = trpc.form.submitForm.useMutation();
+    return { submitResponse, submitResponseAsync, isPending };
+};
+
+export const useGetFormResponses = (id: string) => {
+    const { data, isLoading, refetch, isError, error } = trpc.form.getFormResponses.useQuery({ id });
+    return { data, isLoading, refetch, isError, error };
+};
+
+export const useGetPublicForms = () => {
+    const { data, isLoading, refetch, isError, error } = trpc.form.getPublicForms.useQuery();
+    return { data, isLoading, refetch, isError, error };
 };

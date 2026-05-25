@@ -1,4 +1,4 @@
-import { CreateFormInputType, FormIdInputType, UpdateFormInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType } from "@repo/services/form/model";
+import { CreateFormInputType, FormIdInputType, UpdateFormInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, GetFormResponsesOutputType, GetPublicFormsOutputType } from "@repo/services/form/model";
 import { formService } from "../../services";
 import { Context } from "../../context";
 
@@ -78,4 +78,12 @@ export const getPublicFormWorkspaceProcedure = async ({ input }: { input: FormId
 
 export const submitFormProcedure = async ({ input }: { input: SubmitFormResponseInputType }) => {
   return await formService.submitForm(input);
+};
+
+export const getFormResponsesProcedure = async ({ input, ctx }: { input: FormIdInputType, ctx: Context }): Promise<GetFormResponsesOutputType> => {
+  return await formService.getFormResponses(ctx.user!.id, input);
+};
+
+export const getPublicFormsProcedure = async (): Promise<GetPublicFormsOutputType> => {
+  return await formService.getPublicForms();
 };

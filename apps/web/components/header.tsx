@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormBuilder } from "../app/(protected)/dashboard/forms/[id]/workspace/context";
+import { useFormBuilder } from "./workspace/context";
 import { Button } from "~/components/ui/button";
 import { IconArrowLeft, IconDeviceFloppy, IconWorldUpload, IconEyeOff, IconEye } from "@tabler/icons-react";
 import Link from "next/link";
@@ -28,6 +28,7 @@ import { IconShare } from "@tabler/icons-react";
 import { Input } from "~/components/ui/input";
 
 import { FormWizard } from "./form-wizard";
+import { ThemeToggle } from "~/components/theme-toggle";
 
 export function Header({ formName, initialStatus, initialVisibility }: { formName: string, initialStatus: string, initialVisibility: string }) {
   const { fields, formId } = useFormBuilder();
@@ -71,7 +72,7 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
 
   return (
     <>
-      <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-muted/40 px-6">
+      <header className="flex h-16 items-center gap-4 border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 shadow-sm z-50 dark:bg-black/40">
         <Link href="/dashboard/forms">
           <Button variant="ghost" size="icon" className="rounded-full">
             <IconArrowLeft className="size-5" />
@@ -83,13 +84,14 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsPreviewModalOpen(true)}>
+          <ThemeToggle />
+          <Button variant="outline" size="sm" className="gap-2 rounded-full transition-all hover:bg-accent/50" onClick={() => setIsPreviewModalOpen(true)}>
             <IconEye className="size-4" />
             Preview
           </Button>
 
           {status === "published" && (
-            <Button variant="secondary" size="sm" className="gap-2" onClick={() => setIsShareModalOpen(true)}>
+            <Button variant="secondary" size="sm" className="gap-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-0 transition-all" onClick={() => setIsShareModalOpen(true)}>
               <IconShare className="size-4" />
               Share
             </Button>
@@ -97,7 +99,7 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 rounded-full transition-all hover:bg-accent/50">
                 {visibility === "public" ? <IconEye className="size-4" /> : <IconEyeOff className="size-4" />}
                 <span className="capitalize">{visibility}</span>
               </Button>
@@ -117,7 +119,7 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
           <Button
             variant={status === "published" ? "destructive" : "default"}
             size="sm"
-            className="gap-2"
+            className={`gap-2 rounded-full transition-all ${status === "published" ? "shadow-lg shadow-destructive/20 hover:shadow-destructive/40" : "shadow-lg shadow-primary/20 hover:shadow-primary/40"}`}
             onClick={handlePublishToggle}
             disabled={isPublishing}
           >

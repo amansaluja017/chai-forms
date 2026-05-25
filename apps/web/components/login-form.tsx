@@ -43,16 +43,15 @@ export function LoginForm({
 
     try {
       const response = await loginWithEmailAndPasswordAsync(data);
-      console.log(response);
 
       if (!response.is2FAEnabled) {
         if (response.accessToken) {
-          dispatch(login({ accessToken: response.accessToken, loading: false }));
+          dispatch(login({ accessToken: response.accessToken, loading: false, user: response.user }));
         }
         router.push("/dashboard");
       } else {
         setIs2FARequired(true);
-        setUserId(response.id);
+        setUserId(response.user.id);
         setEmail(data.email);
       }
 

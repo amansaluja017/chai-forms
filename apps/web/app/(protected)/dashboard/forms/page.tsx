@@ -7,7 +7,7 @@ import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
-import { IconPlus, IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconEdit, IconTrash, IconChartBar } from "@tabler/icons-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -87,20 +87,28 @@ export default function FormsPage() {
                     </div>
                   </CardContent>
                   
-                  <CardFooter className="pt-4 border-t border-border/50 flex justify-between bg-black/10">
-                    <Link href={`/dashboard/forms/${form.id}`}>
-                      <Button variant="secondary" size="sm" className="gap-2 hover:bg-secondary/80">
-                        <IconEdit className="size-4" /> Open Builder
-                      </Button>
-                    </Link>
+                  <CardFooter className="pt-4 border-t border-border/50 flex flex-wrap gap-2 justify-between bg-black/10">
+                    <div className="flex gap-2">
+                      <Link href={`/dashboard/forms/${form.id}`}>
+                        <Button variant="secondary" size="sm" className="gap-2 hover:bg-secondary/80">
+                          <IconEdit className="size-4" /> Open
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/forms/${form.id}/results`}>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <IconChartBar className="size-4" /> Results
+                        </Button>
+                      </Link>
+                    </div>
                     <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="gap-2"
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => handleDelete(form.id)}
                       disabled={isDeleting}
+                      title="Delete form"
                     >
-                      <IconTrash className="size-4" /> Delete
+                      <IconTrash className="size-4" />
                     </Button>
                   </CardFooter>
                 </Card>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetFormById, useUpdateForm } from "~/hooks/api/form/form.hook";
+import { useGetFormById } from "~/hooks/api/form/form.hook";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
@@ -25,7 +25,6 @@ export default function EditFormPage() {
   const utils = trpc.useUtils();
   
   const { data: form, isLoading: isFetching } = useGetFormById(id);
-  const { updateFormAsync, isPending: isUpdating } = useUpdateForm();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateFormInputType>();
 
@@ -41,7 +40,6 @@ export default function EditFormPage() {
 
   const onSubmit = async (data: UpdateFormInputType) => {
     try {
-      await updateFormAsync({ ...data, id });
       toast.success("Form updated successfully!");
       utils.form.getForms.invalidate();
       utils.form.getFormById.invalidate({ id });
@@ -113,7 +111,7 @@ export default function EditFormPage() {
                     />
                   </Field>
 
-                  <div className="pt-4 flex justify-end border-t border-border/50">
+                  {/* <div className="pt-4 flex justify-end border-t border-border/50">
                     <Button type="submit" disabled={isUpdating} className="gap-2 px-8 h-12 shadow-lg">
                       {isUpdating ? "Saving..." : (
                         <>
@@ -121,7 +119,7 @@ export default function EditFormPage() {
                         </>
                       )}
                     </Button>
-                  </div>
+                  </div> */}
 
                 </form>
               </CardContent>

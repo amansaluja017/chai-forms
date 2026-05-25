@@ -3,6 +3,7 @@ import {
   uuid,
   varchar,
   timestamp,
+  integer,
 } from "drizzle-orm/pg-core";
 import { usersTable } from "./user";
 
@@ -11,6 +12,7 @@ export const formTable = pgTable("forms", {
 
   title: varchar("title", { length: 255 }).notNull(),
   description: varchar("description", { length: 255 }),
+  views: integer("views").default(0).notNull(),
 
   createdBy: uuid("created_by").notNull().references(() => usersTable.id),
 

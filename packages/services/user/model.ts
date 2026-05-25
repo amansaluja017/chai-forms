@@ -1,5 +1,17 @@
 import { z } from "zod";
 
+export const UserSchema = z.object({
+    id: z.string().describe("Id of the user."),
+    fullName: z.string().describe("Full name of the user."),
+    email: z.string().email().describe("Email of the user."),
+    profileImageUrl: z.string().url().nullable().describe("Profile image URL of the user."),
+    emailVerified: z.boolean().describe("Email verification status of the user."),
+    provider: z.enum(["google", "local"]).describe("Provider of the user."),
+    is2FAEnabled: z.boolean().describe("Whether 2FA is enabled or not."),
+});
+
+export type User = z.infer<typeof UserSchema>;
+
 export const getAuthenticationMethodOutputSchema = z.object({
   provider: z.enum(["GOOGLE_OAUTH", "EMAIL"]),
   displayName: z.string().describe("Display name of the authentication provider."),
@@ -17,8 +29,9 @@ export const loginWithGoogleOauthInputSchema = z.object({
 });
 
 export const loginWithGoogleOauthOutputSchema = z.object({
-  id: z.string().describe("Id of the user."),
+  user: UserSchema,
   accessToken: z.string().describe("Access token."),
+  refreshToken: z.string().describe("Refresh token."),
 });
 
 export const loginWithEmailAndPasswordInputSchema = z.object({
@@ -27,7 +40,7 @@ export const loginWithEmailAndPasswordInputSchema = z.object({
 });
 
 export const loginWithEmailAndPasswordOutputSchema = z.object({
-  id: z.string().describe("Id of the user."),
+  user: UserSchema,
   accessToken: z.string().optional().describe("Access token."),
   refreshToken: z.string().optional().describe("Refresh token."),
   is2FAEnabled: z.boolean().describe("Whether 2FA is enabled or not."),
@@ -74,24 +87,17 @@ export const refreshAccessTokenInputSchema = z.string().describe("refresh token"
 
 export const refreshAccessTokenOutputSchema = z.object({
   accessToken: z.string().describe("Access token."),
+  user: UserSchema
 });
 
 export const profileInputSchema = z.object({
   accessToken: z.string().describe("Access token."),
 });
 
-export const profileOutputSchema = z.object({
-  id: z.string().describe("Id of the user."),
-  fullName: z.string().describe("Full name of the user."),
-  email: z.string().email().describe("Email of the user."),
-  profileImageUrl: z.string().url().nullable().describe("Profile image URL of the user."),
-  emailVerified: z.boolean().describe("Email verification status of the user."),
-  provider: z.enum(["google", "local"]).describe("Provider of the user."),
-  is2FAEnabled: z.boolean().describe("Whether 2FA is enabled or not."),
-});
+export const profileOutputSchema = UserSchema;
 
 export const enable2FAInputSchema = z.object({
-  email: z.string().email().describe("Email of the user."),
+  refreshToken: z.string().describe("Refresh token."),
 });
 
 export const enable2FAOutputSchema = z.object({
@@ -104,7 +110,7 @@ export const verify2FACodeInputSchema = z.object({
 });
 
 export const verify2FACodeOutputSchema = z.object({
-  id: z.string().describe("Id of the user."),
+  user: UserSchema,
   accessToken: z.string().describe("Access token."),
 });
 

@@ -1,5 +1,5 @@
 import db, { eq, and, inArray, asc } from "@repo/database";
-import { formTable, formFieldsTable, formFeildOptions, formStatusTable, responsesTable } from "@repo/database/schema";
+import { formTable, formFieldsTable, formFeildOptions, formStatusTable, responsesTable, usersTable } from "@repo/database/schema";
 import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType } from "./model";
 
 class FormService {
@@ -206,7 +206,7 @@ class FormService {
   public async updateFormField(userId: string, input: UpdateFormFieldInputType) {
     await this.getFormById(userId, { id: input.formId });
 
-    const [updatedField] = await db.update(formFieldsTable).set({
+    await db.update(formFieldsTable).set({
       label: input.label,
       type: input.type,
       isRequired: input.isRequired,
@@ -214,13 +214,10 @@ class FormService {
       description: input.description,
       orderIndex: input.orderIndex,
       labelKey: input.labelKey,
-    }).where(and(eq(formFieldsTable.id, input.id), eq(formFieldsTable.formId, input.formId))).returning();
+    }).where(and(eq(formFieldsTable.id, input.id), eq(formFieldsTable.formId, input.formId)));
 
-    if (!updatedField) throw new Error("Failed to update field");
-
-    // Sync options: Delete existing and insert new (simple atomic sync for the specific field's options)
-    await db.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, input.id));
     if (input.options && input.options.length > 0) {
+      await db.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, input.id));
       const optionsToInsert = input.options.map(opt => ({
         formFeildId: input.id,
         label: opt.label,
@@ -230,7 +227,7 @@ class FormService {
       await db.insert(formFeildOptions).values(optionsToInsert);
     }
 
-    return updatedField;
+    return { success: true };
   };
 
   public async deleteFormField(userId: string, input: DeleteFormFieldInputType) {
@@ -318,9 +315,65 @@ class FormService {
     await db.insert(responsesTable).values({
       formId: input.formId,
       response: input.response,
+      timeToComplete: input.timeToComplete,
     });
 
     return { success: true };
+  }
+
+  public async getFormResponses(userId: string, input: FormIdInputType) {
+    // Check form ownership
+    await this.getFormById(userId, { id: input.id });
+
+    // Fetch fields
+    const fields = await db.select({
+      id: formFieldsTable.id,
+      label: formFieldsTable.label,
+      type: formFieldsTable.type,
+      orderIndex: formFieldsTable.orderIndex,
+    })
+      .from(formFieldsTable)
+      .where(eq(formFieldsTable.formId, input.id))
+      .orderBy(asc(formFieldsTable.orderIndex));
+
+    // Fetch responses
+    const responses = await db.select({
+      id: responsesTable.id,
+      timeToComplete: responsesTable.timeToComplete,
+      createdAt: responsesTable.createdAt,
+      response: responsesTable.response,
+    })
+      .from(responsesTable)
+      .where(eq(responsesTable.formId, input.id));
+
+    return {
+      fields,
+      responses,
+    };
+  }
+
+  public async getPublicForms() {
+    const publicForms = await db.select({
+      id: formTable.id,
+      title: formTable.title,
+      description: formTable.description,
+      views: formTable.views,
+      createdAt: formTable.createdAt,
+      updatedAt: formTable.updatedAt,
+      creatorName: usersTable.fullName,
+    })
+      .from(formTable)
+      .innerJoin(formStatusTable, eq(formTable.id, formStatusTable.formId))
+      .innerJoin(usersTable, eq(formTable.createdBy, usersTable.id))
+      .where(
+        and(
+          eq(formStatusTable.status, "published"),
+          eq(formStatusTable.visibility, "public")
+        )
+      )
+      .orderBy(asc(formTable.createdAt));
+
+    return publicForms;
   }
 }
 

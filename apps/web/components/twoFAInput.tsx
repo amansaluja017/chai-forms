@@ -56,7 +56,7 @@ function TwoFAInput({ userId, email, setIs2FARequired, className }: { userId: st
         try {
             const response = await verify2FACodeAsync({ id: userId, twoFACode: otp });
             if (response.accessToken) {
-                dispatch(login({ accessToken: response.accessToken, loading: false }));
+                dispatch(login({ accessToken: response.accessToken, loading: false, user: response.user }));
                 router.push("/dashboard");
             }
         } catch (error) {

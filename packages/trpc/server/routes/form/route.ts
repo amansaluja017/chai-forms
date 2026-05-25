@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, updateFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema } from "@repo/services/form/model";
+import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema } from "@repo/services/form/model";
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
-import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, updateFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure } from "./procedures";
+import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure, updateFormFieldProcedure, getFormResponsesProcedure, getPublicFormsProcedure } from "./procedures";
 
 const TAGS = ["Forms"];
 const getPath = generatePath("/forms");
@@ -65,7 +65,7 @@ export const formRouter = router({
   updateFormField: protectedProcedure
     .meta({ openapi: { method: "PUT", path: getPath("/{formId}/field"), tags: TAGS } })
     .input(updateFormFieldInputSchema)
-    .output(z.any())
+    .output(z.object({ success: z.boolean() }))
     .mutation(async ({ input, ctx }) => await updateFormFieldProcedure({ input, ctx })),
 
   deleteFormField: protectedProcedure
@@ -91,4 +91,16 @@ export const formRouter = router({
     .input(submitFormResponseInputSchema)
     .output(z.object({ success: z.boolean() }))
     .mutation(async ({ input }) => await submitFormProcedure({ input })),
+
+  getFormResponses: protectedProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/{id}/responses"), tags: TAGS } })
+    .input(formIdInputSchema)
+    .output(getFormResponsesOutputSchema)
+    .query(async ({ input, ctx }) => await getFormResponsesProcedure({ input, ctx })),
+
+  getPublicForms: publicProcedure
+    .meta({ openapi: { method: "GET", path: getPath("/public/explore"), tags: TAGS } })
+    .input(z.void())
+    .output(getPublicFormsOutputSchema)
+    .query(async () => await getPublicFormsProcedure()),
 });

@@ -90,7 +90,7 @@ class UserService {
       throw new Error("Invalid Google OAuth token");
     };
 
-    const existedUser = await this.existingUserWithEmail(email);
+    let existedUser = await this.existingUserWithEmail(email);
 
     let id: string;
 
@@ -101,29 +101,32 @@ class UserService {
         emailVerified: email_verified,
         provider: "google",
         fullName: name,
-      }).returning({ id: usersTable.id });
+      }).returning();
 
       if (!user[0]) {
         throw new Error("Failed to create user");
       };
 
       id = user[0].id;
+      existedUser = user[0];
     } else {
       id = existedUser.id;
     };
 
     const sessionId = crypto.randomUUID();
 
+    const { password: _, ...restUser } = existedUser;
+
     await client.set(
       `user-session:${sessionId}`,
-      JSON.stringify({ user: existedUser }),
+      JSON.stringify({ user: restUser }),
       { EX: 7 * 24 * 60 * 60 * 1000 }
     );
 
     const accessToken = generateAccessToken({ id, email });
     const refreshToken = generateRefreshToken({ sessionId });
 
-    return { id, accessToken, refreshToken };
+    return { user: restUser as any, accessToken, refreshToken };
   };
 
   public async loginWithEmailAndPassword(input: LoginWithEmailAndPasswordInputType) {
@@ -152,7 +155,7 @@ class UserService {
     if (existedUser.is2FAEnabled) {
       await this.sendCode(email, existedUser.id, existedUser.fullName);
 
-      return { id: existedUser.id, is2FAEnabled: true };
+      return { user: existedUser, is2FAEnabled: true };
     };
 
     const sessionId = crypto.randomUUID();
@@ -168,7 +171,7 @@ class UserService {
       { EX: 7 * 24 * 60 * 60 * 1000 }
     );
 
-    return { id: existedUser.id, accessToken, refreshToken, is2FAEnabled: false };
+    return { user: restUser as any, accessToken, refreshToken, is2FAEnabled: false };
   };
 
   public async resend2FACode(input: Resend2FACodeInputType) {
@@ -390,7 +393,7 @@ class UserService {
     const newAccessToken = generateAccessToken({ id: user.id, email: user.email });
     const newRefreshToken = generateRefreshToken({ sessionId: newSessionId });
 
-    return { id: user.id, accessToken: newAccessToken, refreshToken: newRefreshToken };
+    return { user: user as any, accessToken: newAccessToken, refreshToken: newRefreshToken };
 
   } catch(error: any) {
     logger.error("Error refreshing access token", { error });
@@ -398,21 +401,35 @@ class UserService {
   };
 
   public async toggle2FA(input: Enable2FAInputType) {
-    const { email } = enable2FAInputSchema.parse(input);
+    const { refreshToken } = enable2FAInputSchema.parse(input);
 
-    const [existedUser] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+    const decodedToken = verifyRefreshToken(refreshToken);
 
-    if (!existedUser) {
+    if (!decodedToken) {
+      throw new Error("Invalid or expired token");
+    };
+
+    const { sessionId } = decodedToken;
+
+    const session = await client.get(`user-session:${sessionId}`);
+
+    if (!session) {
+      throw new Error("Invalid or expired token");
+    };
+
+    const { user } = JSON.parse(session);
+
+    const [updatedUser] = await db.update(usersTable).set({
+      is2FAEnabled: !user.is2FAEnabled,
+    }).where(eq(usersTable.id, user.id)).returning({ id: usersTable.id, is2FAEnabled: usersTable.is2FAEnabled, email: usersTable.email, fullName: usersTable.fullName, profileImageUrl: usersTable.profileImageUrl, emailVerified: usersTable.emailVerified, provider: usersTable.provider, createdAt: usersTable.createdAt, updatedAt: usersTable.updatedAt, role: usersTable.role });
+
+    if (!updatedUser) {
       throw new Error("No user found with this email");
     };
 
-    const user = await db.update(usersTable).set({
-      is2FAEnabled: !existedUser.is2FAEnabled,
-    }).where(eq(usersTable.email, email)).returning({ id: usersTable.id, is2FAEnabled: usersTable.is2FAEnabled, email: usersTable.email });
-
-    if (!user) {
-      throw new Error("No user found with this email");
-    };
+    await client.set(`user-session:${sessionId}`, JSON.stringify({ user: updatedUser }), {
+      KEEPTTL: true
+    });
   };
 
   public async verify2FACode(input: Verify2FACodeInputType) {
@@ -447,7 +464,7 @@ class UserService {
     const accessToken = generateAccessToken({ id: existedUser.id, email: existedUser.email });
     const refreshToken = generateRefreshToken({ sessionId });
 
-    return { id: existedUser.id, accessToken, refreshToken };
+    return { user: restUser as any, accessToken, refreshToken };
   };
 
   public async logout(input: LogoutInputType) {

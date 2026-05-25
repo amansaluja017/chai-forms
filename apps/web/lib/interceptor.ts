@@ -24,10 +24,10 @@ export async function customFetch(
     try {
       const body = await cloned.json();
       if (JSON.stringify(body).includes("JWTEXPIRED")) {
-        const { accessToken } = await refreshAccessToken();
+        const { accessToken, user } = await refreshAccessToken();
         
         if (accessToken) {
-          store.dispatch(refresh({ accessToken, loading: false }));
+          store.dispatch(refresh({ accessToken, loading: false, user }));
 
           response = await fetch(input, {
             ...init,

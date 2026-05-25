@@ -3,11 +3,13 @@ import { router } from "./trpc";
 import { healthRouter } from "./routes/health/route";
 import { authRouter } from "./routes/auth/route";
 import { formRouter } from "./routes/form/route";
+import { analyticsRouter } from "./routes/analytics/route";
 
 export const serverRouter = router({
   health: healthRouter,
   auth: authRouter,
   form: formRouter,
+  analytics: analyticsRouter,
 });
 
 export { createContext } from "./context";

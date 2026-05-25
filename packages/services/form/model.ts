@@ -105,7 +105,39 @@ export const submitFormResponseInputSchema = z.object({
   response: z.array(z.object({
     formFieldId: z.string(), // Field ID is a UUID
     value: z.string(), // All field responses serialized as string
-  }))
+  })),
+  timeToComplete: z.number().default(0),
 });
 
 export type SubmitFormResponseInputType = z.infer<typeof submitFormResponseInputSchema>;
+
+export const getFormResponsesOutputSchema = z.object({
+  fields: z.array(z.object({
+    id: z.string(),
+    label: z.string(),
+    type: z.string(),
+  })),
+  responses: z.array(z.object({
+    id: z.string(),
+    timeToComplete: z.number(),
+    createdAt: z.date().nullable(),
+    response: z.array(z.object({
+      formFieldId: z.string(),
+      value: z.string(),
+    })),
+  })),
+});
+
+export type GetFormResponsesOutputType = z.infer<typeof getFormResponsesOutputSchema>;
+
+export const getPublicFormsOutputSchema = z.array(z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  views: z.number(),
+  createdAt: z.date().nullable(),
+  updatedAt: z.date().nullable(),
+  creatorName: z.string(),
+}));
+
+export type GetPublicFormsOutputType = z.infer<typeof getPublicFormsOutputSchema>;

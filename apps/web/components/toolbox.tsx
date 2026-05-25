@@ -32,19 +32,21 @@ function DraggableTool({ type, label, icon: Icon }: { type: string, label: strin
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`flex items-center gap-3 p-3 rounded-md border bg-card/50 hover:bg-accent/50 cursor-grab active:cursor-grabbing transition-colors ${isDragging ? "opacity-50" : ""}`}
+      className={`group flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-background/40 hover:bg-primary/5 hover:border-primary/20 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 cursor-grab active:cursor-grabbing transition-all duration-300 ${isDragging ? "opacity-50 scale-95" : ""}`}
     >
-      <Icon className="size-5 text-muted-foreground" />
-      <span className="text-sm font-medium">{label}</span>
+      <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary/80 group-hover:text-primary group-hover:bg-primary/20 transition-colors">
+        <Icon className="size-5" />
+      </div>
+      <span className="text-sm font-medium tracking-tight">{label}</span>
     </div>
   );
 }
 
 export function Toolbox() {
   return (
-    <div className="w-64 border-r bg-background/50 flex flex-col h-full overflow-y-auto">
-      <div className="p-4 border-b bg-card">
-        <h3 className="font-semibold">Add Content</h3>
+    <div className="w-full border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col h-full overflow-y-auto rounded-2xl shadow-xl dark:bg-black/40">
+      <div className="p-5 border-b border-white/10">
+        <h3 className="font-bold tracking-tight">Components</h3>
         <p className="text-xs text-muted-foreground mt-1">Drag fields to the canvas</p>
       </div>
       <div className="p-4 flex flex-col gap-2 flex-1">
