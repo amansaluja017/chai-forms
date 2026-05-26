@@ -1,8 +1,8 @@
 import { z, zodUndefinedModel, zodUnitModel } from "../../schema";
-import { getAuthenticationMethodOutputSchema, loginWithEmailAndPasswordInputSchema, loginWithEmailAndPasswordOutputSchema, loginWithGoogleOauthInputSchema, loginWithGoogleOauthOutputSchema, passwordResetLinkInputSchema, passwordResetLinkOutputSchema, profileInputSchema, profileOutputSchema, refreshAccessTokenInputSchema, refreshAccessTokenOutputSchema, registerWithEmailAndPasswordInputSchema, registerWithEmailAndPasswordOutputSchema, resend2FACodeInputSchema, resend2FACodeOutputSchema, resendVerificationEmailInputSchema, resendVerificationEmailOutputSchema, resetPasswordInputSchema, resetPasswordOutputSchema, verify2FACodeInputSchema, verify2FACodeOutputSchema, verifyEmailInputSchema, verifyEmailOutputSchema } from "@repo/services/user/model";
+import { getAuthenticationMethodOutputSchema, loginWithEmailAndPasswordInputSchema, loginWithEmailAndPasswordOutputSchema, loginWithGoogleOauthInputSchema, loginWithGoogleOauthOutputSchema, passwordResetLinkInputSchema, passwordResetLinkOutputSchema, refreshAccessTokenInputSchema, refreshAccessTokenOutputSchema, registerWithEmailAndPasswordInputSchema, registerWithEmailAndPasswordOutputSchema, resend2FACodeInputSchema, resend2FACodeOutputSchema, resendVerificationEmailInputSchema, resendVerificationEmailOutputSchema, resetPasswordInputSchema, resetPasswordOutputSchema, verify2FACodeInputSchema, verify2FACodeOutputSchema, verifyEmailInputSchema, verifyEmailOutputSchema } from "@repo/services/user/model";
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
-import { enable2FAProcedure, getSupportedAuthenticationProcedure, loginWithEmailAndPasswordProcedure, loginWithGoogleOauthProcedure, logoutProcedure, passwordResetLinkProcedure, profileProcedure, refreshAccessTokenProcedure, registerWithEmailAndPasswordProcedure, resend2FACodeProcedure, resendVerificationEmailProcedure, resetPasswordProcedure, verify2FACodeProcedure, verifyEmailProcedure } from "./procedures";
+import { enable2FAProcedure, getSupportedAuthenticationProcedure, loginWithEmailAndPasswordProcedure, loginWithGoogleOauthProcedure, logoutProcedure, passwordResetLinkProcedure, refreshAccessTokenProcedure, registerWithEmailAndPasswordProcedure, resend2FACodeProcedure, resendVerificationEmailProcedure, resetPasswordProcedure, verify2FACodeProcedure, verifyEmailProcedure } from "./procedures";
 
 const TAGS = ["Authentication"];
 const getPath = generatePath("/authentication");
@@ -61,12 +61,6 @@ export const authRouter = router({
     .input(zodUnitModel)
     .output(refreshAccessTokenOutputSchema)
     .mutation(async ({ ctx }) => await refreshAccessTokenProcedure({ ctx })),
-
-  profile: protectedProcedure
-    .meta({ openapi: { method: "GET", path: getPath("/profile"), tags: TAGS } })
-    .input(zodUnitModel)
-    .output(profileOutputSchema)
-    .query(async ({ ctx }) => await profileProcedure({ ctx })),
 
   toggle2FA: protectedProcedure
     .meta({ openapi: { method: "POST", path: getPath("/toggle-2fa"), tags: TAGS } })

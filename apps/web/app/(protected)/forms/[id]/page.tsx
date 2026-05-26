@@ -3,13 +3,13 @@
 import { useParams } from "next/navigation";
 import { useGetFormWorkspace } from "~/hooks/api/form/form.hook";
 import { Spinner } from "~/components/ui/spinner";
-import { FormBuilderProvider } from "../../../../../components/workspace/context";
 import { Header } from "~/components/header";
 import { BuilderDndContext } from "~/components/builder-dnd-context";
 import { Toolbox } from "~/components/toolbox";
 import { Canvas } from "~/components/canvas";
 import { PropertiesPanel } from "~/components/properties-panel";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "~/components/ui/resizable";
+import { FormBuilderProvider } from "~/components/workspace/context";
 
 export default function FormWorkspacePage() {
   const { id } = useParams() as { id: string };

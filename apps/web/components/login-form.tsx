@@ -46,6 +46,7 @@ export function LoginForm({
 
       if (!response.is2FAEnabled) {
         if (response.accessToken) {
+          console.log(response);
           dispatch(login({ accessToken: response.accessToken, loading: false, user: response.user }));
         }
         router.push("/dashboard");

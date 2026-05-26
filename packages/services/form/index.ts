@@ -1,4 +1,4 @@
-import db, { eq, and, inArray, asc } from "@repo/database";
+import db, { eq, and, inArray, asc, not } from "@repo/database";
 import { formTable, formFieldsTable, formFeildOptions, formStatusTable, responsesTable, usersTable } from "@repo/database/schema";
 import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType } from "./model";
 
@@ -23,20 +23,53 @@ class FormService {
   }
 
   public async getForms(userId: string) {
-    return await db.select().from(formTable).where(eq(formTable.createdBy, userId));
+    const forms = await db.select({
+      id: formTable.id,
+      title: formTable.title,
+      description: formTable.description,
+      createdBy: formTable.createdBy,
+      createdAt: formTable.createdAt,
+      updatedAt: formTable.updatedAt,
+      status: formStatusTable.status,
+    })
+    .from(formTable)
+    .innerJoin(formStatusTable, eq(formTable.id, formStatusTable.formId))
+    .where(
+      and(
+        eq(formTable.createdBy, userId),
+        not(eq(formStatusTable.status, "deleted"))
+      )
+    );
+
+    return forms;
   }
 
-  public async getFormById(userId: string, input: FormIdInputType) {
-    const [form] = await db.select()
+  public async getFormById(userId: string, input: FormIdInputType, isAdmin: boolean = false) {
+    const conditions = isAdmin
+      ? eq(formTable.id, input.id)
+      : and(
+          eq(formTable.id, input.id), 
+          eq(formTable.createdBy, userId)
+        );
+
+    const [formRecord] = await db.select({
+      form: formTable,
+      status: formStatusTable.status,
+    })
       .from(formTable)
-      .where(and(eq(formTable.id, input.id), eq(formTable.createdBy, userId)))
+      .innerJoin(formStatusTable, eq(formTable.id, formStatusTable.formId))
+      .where(conditions)
       .limit(1);
 
-    if (!form) {
+    if (!formRecord) {
       throw new Error("Form not found");
     }
 
-    return form;
+    if (!isAdmin && formRecord.status === "deleted") {
+      throw new Error("Form not found or has been deleted");
+    }
+
+    return formRecord.form;
   }
 
   public async updateForm(userId: string, input: UpdateFormInputType) {
@@ -54,29 +87,21 @@ class FormService {
   }
 
   public async deleteForm(userId: string, input: FormIdInputType) {
-    await this.getFormById(userId, { id: input.id });
+    const form = await this.getFormById(userId, { id: input.id });
 
-    // delete form fields, options, and status first (if no cascade)
-    // assuming cascade is not set, we manually delete
-    await db.delete(formFeildOptions).where(
-      inArray(formFeildOptions.formFeildId, 
-        db.select({ id: formFieldsTable.id }).from(formFieldsTable).where(eq(formFieldsTable.formId, input.id))
-      )
-    );
-    await db.delete(formFieldsTable).where(eq(formFieldsTable.formId, input.id));
-    await db.delete(formStatusTable).where(eq(formStatusTable.formId, input.id));
-
-    const [deletedForm] = await db.delete(formTable)
-      .where(eq(formTable.id, input.id))
+    // Soft delete the form by updating its status
+    const [deletedStatus] = await db.update(formStatusTable)
+      .set({ status: "deleted" })
+      .where(eq(formStatusTable.formId, input.id))
       .returning();
 
-    if (!deletedForm) throw new Error("Failed to delete form");
+    if (!deletedStatus) throw new Error("Failed to delete form");
 
-    return deletedForm;
+    return form;
   }
 
-  public async getFormWorkspace(userId: string, input: FormIdInputType) {
-    const form = await this.getFormById(userId, input);
+  public async getFormWorkspace(userId: string, input: FormIdInputType, isAdmin: boolean = false) {
+    const form = await this.getFormById(userId, input, isAdmin);
 
     const fields = await db.select().from(formFieldsTable).where(eq(formFieldsTable.formId, form.id)).orderBy(formFieldsTable.orderIndex);
     
@@ -321,9 +346,9 @@ class FormService {
     return { success: true };
   }
 
-  public async getFormResponses(userId: string, input: FormIdInputType) {
-    // Check form ownership
-    await this.getFormById(userId, { id: input.id });
+  public async getFormResponses(userId: string, input: FormIdInputType, isAdmin: boolean = false) {
+    // Check form ownership or admin role
+    await this.getFormById(userId, { id: input.id }, isAdmin);
 
     // Fetch fields
     const fields = await db.select({

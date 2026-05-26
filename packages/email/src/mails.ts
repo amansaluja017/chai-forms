@@ -190,3 +190,61 @@ export function enable2FAMail(name: string, verificationLink: string) {
   return mailString;
 }
 
+export function formDeletionMail(name: string, formTitle: string, reason: string) {
+  const mailString = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Form Deleted</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); max-width: 600px; margin: 0 auto; border: 1px solid #f3f4f6;">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="padding: 40px 40px 20px; text-align: center;">
+                    <div style="background: #fef2f2; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto; padding: 12px; box-sizing: border-box; margin-bottom: 24px;">
+                      <span style="font-size: 32px; line-height: 1;">⚠️</span>
+                    </div>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #111827; letter-spacing: -0.5px;">Form Deleted by Admin</h1>
+                  </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                  <td style="padding: 0 40px 30px; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                    <p style="margin-bottom: 20px;">Hi <strong>${name}</strong>,</p>
+                    <p style="margin-bottom: 20px;">
+                      We are writing to inform you that your form <strong>"${formTitle}"</strong> has been deleted by an administrator.
+                    </p>
+                    <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 32px;">
+                      <p style="margin: 0; font-size: 14px; font-weight: 600; color: #374151;">Reason for deletion:</p>
+                      <p style="margin: 8px 0 0 0; color: #4b5563;">${reason}</p>
+                    </div>
+                    <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">
+                      If you believe this was a mistake, please reach out to support.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #f8fafc; padding: 32px 40px; text-align: center; font-size: 14px; color: #94a3b8; border-top: 1px solid #f1f5f9;">
+                    <p style="margin: 0 0 8px;">© ${new Date().getFullYear()} Your App. All rights reserved.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
+
+  return mailString;
+}

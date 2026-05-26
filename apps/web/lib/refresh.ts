@@ -17,6 +17,7 @@ export default async function refreshAccessToken(): Promise<{
 
         return { accessToken: data.accessToken, user: data.user };
     } catch (error) {
+        console.error("Error refreshing token", error);
         return { accessToken: null, user: null };
     }
 

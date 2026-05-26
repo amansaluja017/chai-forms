@@ -86,7 +86,7 @@ export function SignupForm({
                   type="text" 
                   placeholder="Doe" 
                   className="h-11 bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
-                  {...register("lastName", { required: "Last name is required" })}
+                  {...register("lastName")}
                 />
                 {errors.lastName && <p className="text-xs font-medium text-red-500">{errors.lastName.message}</p>}
               </Field>

@@ -8,6 +8,7 @@ export const UserSchema = z.object({
     emailVerified: z.boolean().describe("Email verification status of the user."),
     provider: z.enum(["google", "local"]).describe("Provider of the user."),
     is2FAEnabled: z.boolean().describe("Whether 2FA is enabled or not."),
+    role: z.enum(["admin", "user"]).describe("Role of the user."),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -48,8 +49,8 @@ export const loginWithEmailAndPasswordOutputSchema = z.object({
 
 export const registerWithEmailAndPasswordInputSchema = z.object({
   firstName: z.string().describe("First name of the user."),
-  lastName: z.string().describe("Last name of the user."),
-  email: z.string().email().describe("Email of the user."),
+  lastName: z.string().optional().describe("Last name of the user."),
+  email: z.email().describe("Email of the user."),
   password: z.string().describe("Password of the user."),
 });
 
@@ -89,12 +90,6 @@ export const refreshAccessTokenOutputSchema = z.object({
   accessToken: z.string().describe("Access token."),
   user: UserSchema
 });
-
-export const profileInputSchema = z.object({
-  accessToken: z.string().describe("Access token."),
-});
-
-export const profileOutputSchema = UserSchema;
 
 export const enable2FAInputSchema = z.object({
   refreshToken: z.string().describe("Refresh token."),
@@ -195,14 +190,6 @@ export type RefreshAccessTokenInputType = z.infer<
 
 export type RefreshAccessTokenOutputType = z.infer<
   typeof refreshAccessTokenOutputSchema
->;
-
-export type ProfileInputType = z.infer<
-  typeof profileInputSchema
->;
-
-export type ProfileOutputType = z.infer<
-  typeof profileOutputSchema
 >;
 
 export type Enable2FAInputType = z.infer<

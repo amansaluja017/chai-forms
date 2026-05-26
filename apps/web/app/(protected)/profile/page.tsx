@@ -117,7 +117,7 @@ function Profile() {
                             </Badge>
                         </div>
 
-                        {user.provider === "local" && (
+                        {user.provider === "local" && user.role === "user" && (
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl border border-border/40 bg-background/30 backdrop-blur-sm hover:bg-background/50 hover:border-border/80 transition-all duration-300 shadow-sm group">
                                 <div className="space-y-1.5 mb-5 sm:mb-0 pr-6 max-w-xl">
                                     <Label className="text-lg font-semibold tracking-tight text-foreground">Two-Factor Authentication (2FA)</Label>

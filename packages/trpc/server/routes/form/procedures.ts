@@ -20,7 +20,7 @@ export const getFormByIdProcedure = async ({ input, ctx }: { input: FormIdInputT
   if (!ctx.user) {
     throw new Error("No user found");
   }
-  return await formService.getFormById(ctx.user.id, input);
+  return await formService.getFormById(ctx.user.id, input, ctx.user.role === "admin");
 };
 
 export const updateFormProcedure = async ({ input, ctx }: { input: UpdateFormInputType, ctx: Context }) => {
@@ -41,7 +41,7 @@ export const getFormWorkspaceProcedure = async ({ input, ctx }: { input: FormIdI
   if (!ctx.user) {
     throw new Error("No user found");
   }
-  return await formService.getFormWorkspace(ctx.user.id, input);
+  return await formService.getFormWorkspace(ctx.user.id, input, ctx.user.role === "admin");
 };
 
 export const saveFormFieldsProcedure = async ({ input, ctx }: { input: SaveFormFieldsInputType, ctx: Context }) => {
@@ -81,7 +81,7 @@ export const submitFormProcedure = async ({ input }: { input: SubmitFormResponse
 };
 
 export const getFormResponsesProcedure = async ({ input, ctx }: { input: FormIdInputType, ctx: Context }): Promise<GetFormResponsesOutputType> => {
-  return await formService.getFormResponses(ctx.user!.id, input);
+  return await formService.getFormResponses(ctx.user!.id, input, ctx.user!.role === "admin");
 };
 
 export const getPublicFormsProcedure = async (): Promise<GetPublicFormsOutputType> => {

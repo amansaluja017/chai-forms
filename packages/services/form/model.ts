@@ -70,11 +70,18 @@ export const formWorkspaceOutputSchema = formOutputSchema.extend({
   status: formStatusSchema.nullable(),
 });
 
+export const getUserFormsOutputSchema = z.array(
+  formOutputSchema.extend({
+    status: z.string(),
+  })
+);
+
 export type FormFieldType = z.infer<typeof formFieldSchema>;
 export type FormOptionType = z.infer<typeof formOptionSchema>;
 export type SaveFormFieldsInputType = z.infer<typeof saveFormFieldsInputSchema>;
 export type FormStatusType = z.infer<typeof formStatusSchema>;
 export type FormWorkspaceOutputType = z.infer<typeof formWorkspaceOutputSchema>;
+export type GetUserFormsOutputType = z.infer<typeof getUserFormsOutputSchema>;
 
 export const createFormFieldInputSchema = formFieldSchema.extend({ id: z.string().uuid().optional() });
 

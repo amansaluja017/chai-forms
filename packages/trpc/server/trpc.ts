@@ -20,8 +20,17 @@ const middleware = tRPCContext.middleware(async ({ next, ctx }) => {
   return next();
 });
 
+const adminMiddleware = tRPCContext.middleware(async ({ next, ctx }) => {
+  if (ctx.user?.role !== "admin") {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Admin access required" });
+  }
+  return next({ ctx });
+});
+
 export const router = tRPCContext.router;
 
 export const publicProcedure = tRPCContext.procedure;
 
 export const protectedProcedure = publicProcedure.use(middleware);
+
+export const adminProcedure = protectedProcedure.use(adminMiddleware);

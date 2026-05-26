@@ -107,14 +107,12 @@ export function BuilderDndContext({ children }: { children: React.ReactNode }) {
         addField(newField);
 
         try {
-          console.log(active, over);
           await createFieldAsync(newField);
         } catch (error) {
           toast.error("Failed to save new field to database.");
         }
       }
     } else if (active.data.current?.type === "Field") {
-      console.log(active, over);
       if (active.id !== over.id) {
         // Optimistic local reorder with fractional indexing
         const newOrderIndex = reorderFields(active.id as string, over.id as string);

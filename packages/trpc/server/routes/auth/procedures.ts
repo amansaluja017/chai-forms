@@ -1,4 +1,4 @@
-import { LoginWithEmailAndPasswordInputType, LoginWithGoogleOauthInputSchema, LogoutInputType, PasswordResetLinkInputType, ProfileInputType, RegisterWithEmailAndPasswordInputType, Resend2FACodeInputType, ResendVerificationEmailInputType, ResetPasswordInputType, Verify2FACodeInputType, VerifyEmailInputType } from "@repo/services/user/model";
+import { LoginWithEmailAndPasswordInputType, LoginWithGoogleOauthInputSchema, LogoutInputType, PasswordResetLinkInputType, RegisterWithEmailAndPasswordInputType, Resend2FACodeInputType, ResendVerificationEmailInputType, ResetPasswordInputType, Verify2FACodeInputType, VerifyEmailInputType } from "@repo/services/user/model";
 import { userService } from "../../services";
 import { Context } from "../../context";
 
@@ -90,16 +90,6 @@ export const refreshAccessTokenProcedure = async ({ ctx }: { ctx: Context }) => 
   
   return { user, accessToken };
 };
-
-export const profileProcedure = async ({ ctx }: { ctx: Context }) => {
-  if (!ctx.user) {
-    throw new Error("No user found");
-  }
-
-  const { id, fullName, email, profileImageUrl, emailVerified, provider, is2FAEnabled } = ctx.user;
-
-  return { id, fullName, email, profileImageUrl, emailVerified, provider, is2FAEnabled };
-}
 
 export const enable2FAProcedure = async ({ ctx }: { ctx: Context }) => {
   if (!ctx.user) {

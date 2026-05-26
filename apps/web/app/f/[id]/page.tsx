@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useGetPublicFormWorkspace } from "~/hooks/api/form/form.hook";
 import { FormWizard } from "../../../components/form-wizard";
 import { IconLoader2 } from "@tabler/icons-react";
+import { FormWorkspaceOutputType } from "@repo/services/form/model";
 
 export default function PublicFormPage() {
   const params = useParams();
@@ -40,7 +41,7 @@ export default function PublicFormPage() {
           )}
         </div>
 
-        <FormWizard form={form as any} />
+        <FormWizard form={form as FormWorkspaceOutputType} />
       </div>
     </div>
   );

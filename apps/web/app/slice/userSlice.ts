@@ -8,6 +8,7 @@ type User = {
   emailVerified: boolean;
   provider: "google" | "local";
   is2FAEnabled: boolean;
+  role: "admin" | "user";
 };
 
 type UserState = {

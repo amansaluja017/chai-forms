@@ -121,17 +121,6 @@ export const useRefreshAccessToken = () => {
     }
 };
 
-export const useGetProfile = () => {
-    const {data, isLoading, error, isError} = trpc.auth.profile.useQuery();
-
-    return {
-        data,
-        isLoading,
-        error,
-        isError
-    }
-};
-
 export const useToggle2FA = () => {
     const {mutate: toggle2FA, mutateAsync: toggle2FAAsync, isSuccess, status, error, failureCount, isError, isPending} = trpc.auth.toggle2FA.useMutation();
 

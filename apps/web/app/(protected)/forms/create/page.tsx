@@ -48,7 +48,7 @@ export default function CreateFormPage() {
         <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 max-w-4xl mx-auto w-full">
           
           <div className="flex items-center gap-4 mb-8">
-            <Link href="/dashboard/forms">
+            <Link href="/forms">
               <Button variant="outline" size="icon" className="rounded-full">
                 <IconArrowLeft className="size-5" />
               </Button>

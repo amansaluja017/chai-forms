@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema } from "@repo/services/form/model";
+import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema, getUserFormsOutputSchema } from "@repo/services/form/model";
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure, updateFormFieldProcedure, getFormResponsesProcedure, getPublicFormsProcedure } from "./procedures";
@@ -17,7 +17,7 @@ export const formRouter = router({
   getForms: protectedProcedure
     .meta({ openapi: { method: "GET", path: getPath("/"), tags: TAGS } })
     .input(z.void())
-    .output(z.array(formOutputSchema))
+    .output(getUserFormsOutputSchema)
     .query(async ({ ctx }) => await getFormsProcedure({ ctx })),
 
   getFormById: protectedProcedure

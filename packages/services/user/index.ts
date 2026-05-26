@@ -2,7 +2,7 @@ import { and, db, eq, gte } from "@repo/database";
 import { tokensTable, usersTable } from "@repo/database/schema";
 import { env } from "../env";
 import { googleOAuth2Client } from "../clients/google-oauth";
-import { enable2FAInputSchema, Enable2FAInputType, GetAuthenticationMethodOutputSchema, loginWithEmailAndPasswordInputSchema, LoginWithEmailAndPasswordInputType, logoutInputSchema, LogoutInputType, passwordResetLinkInputSchema, PasswordResetLinkInputType, profileInputSchema, ProfileInputType, refreshAccessTokenInputSchema, RefreshAccessTokenInputType, registerWithEmailAndPasswordInputSchema, RegisterWithEmailAndPasswordInputType, RegisterWithEmailAndPasswordOutputType, resend2FACodeInputSchema, Resend2FACodeInputType, resendVerificationEmailInputSchema, ResendVerificationEmailInputType, resetPasswordInputSchema, ResetPasswordInputType, verify2FACodeInputSchema, Verify2FACodeInputType, verifyEmailInputSchema, VerifyEmailInputType } from "./model";
+import { enable2FAInputSchema, Enable2FAInputType, GetAuthenticationMethodOutputSchema, loginWithEmailAndPasswordInputSchema, LoginWithEmailAndPasswordInputType, logoutInputSchema, LogoutInputType, passwordResetLinkInputSchema, PasswordResetLinkInputType, refreshAccessTokenInputSchema, RefreshAccessTokenInputType, registerWithEmailAndPasswordInputSchema, RegisterWithEmailAndPasswordInputType, RegisterWithEmailAndPasswordOutputType, resend2FACodeInputSchema, Resend2FACodeInputType, resendVerificationEmailInputSchema, ResendVerificationEmailInputType, resetPasswordInputSchema, ResetPasswordInputType, verify2FACodeInputSchema, Verify2FACodeInputType, verifyEmailInputSchema, VerifyEmailInputType } from "./model";
 import bcrypt from "bcrypt";
 import crypto from "node:crypto";
 import { sendEmail, verificationMail, forgotPasswordMail, enable2FAMail } from "@repo/email"
@@ -126,7 +126,7 @@ class UserService {
     const accessToken = generateAccessToken({ id, email });
     const refreshToken = generateRefreshToken({ sessionId });
 
-    return { user: restUser as any, accessToken, refreshToken };
+    return { user: restUser, accessToken, refreshToken };
   };
 
   public async loginWithEmailAndPassword(input: LoginWithEmailAndPasswordInputType) {
@@ -155,7 +155,9 @@ class UserService {
     if (existedUser.is2FAEnabled) {
       await this.sendCode(email, existedUser.id, existedUser.fullName);
 
-      return { user: existedUser, is2FAEnabled: true };
+      const { password: _, ...restUser } = existedUser;
+
+      return { user: restUser, is2FAEnabled: true };
     };
 
     const sessionId = crypto.randomUUID();
@@ -171,7 +173,7 @@ class UserService {
       { EX: 7 * 24 * 60 * 60 * 1000 }
     );
 
-    return { user: restUser as any, accessToken, refreshToken, is2FAEnabled: false };
+    return { user: restUser, accessToken, refreshToken, is2FAEnabled: false };
   };
 
   public async resend2FACode(input: Resend2FACodeInputType) {

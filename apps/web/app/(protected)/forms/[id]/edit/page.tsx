@@ -43,7 +43,7 @@ export default function EditFormPage() {
       toast.success("Form updated successfully!");
       utils.form.getForms.invalidate();
       utils.form.getFormById.invalidate({ id });
-      router.push("/dashboard/forms");
+      router.push("/forms");
     } catch (e) {
       toast.error("Failed to update form");
     }
@@ -110,16 +110,6 @@ export default function EditFormPage() {
                       {...register("description")}
                     />
                   </Field>
-
-                  {/* <div className="pt-4 flex justify-end border-t border-border/50">
-                    <Button type="submit" disabled={isUpdating} className="gap-2 px-8 h-12 shadow-lg">
-                      {isUpdating ? "Saving..." : (
-                        <>
-                          <IconDeviceFloppy className="size-5" /> Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </div> */}
 
                 </form>
               </CardContent>
