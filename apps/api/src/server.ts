@@ -19,40 +19,35 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
   baseUrl: env.BASE_URL.concat("/api"),
 });
 
-if (env.NODE_ENV !== "prod") {
-  app.use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: true
-    }),
-  );
-}
+app.use(cors({ origin: env.BASE_URL, credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// app.use(
-//   helmet.contentSecurityPolicy({
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       scriptSrc: [
-//         "'self'",
-//         "https://cdn.jsdelivr.net",
-//       ],
-//     },
-//   })
-// );
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://cdn.jsdelivr.net",
+        ],
+      },
+    },
+  })
+);
 
-app.get("/", (req, res) => {
-  return res.json({ message: "Streamyst is up and running..." });
+app.get("/", (_req, res) => {
+  return res.json({ message: "Chai forms is up and running..." });
 });
 
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   return res.json({ message: "Streamyst server is healthy", healthy: true });
 });
 
 logger.debug(`openapi.json: ${env.BASE_URL}/openapi.json`);
-app.get("/openapi.json", (req, res) => {
+app.get("/openapi.json", (_req, res) => {
   return res.json(openApiDocument);
 });
 

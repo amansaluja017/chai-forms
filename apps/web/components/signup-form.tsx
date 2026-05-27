@@ -117,7 +117,11 @@ export function SignupForm({
                 className="h-11 bg-background/50 backdrop-blur-sm transition-all focus:bg-background/80"
                 {...register("password", {
                   required: "Password is required",
-                  minLength: {value: 6, message: "Password must be at least 6 characters long"}
+                  minLength: {value: 6, message: "Password must be at least 6 characters long"},
+                  pattern: {
+                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                    message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+                  },
                 })}
               />
               {errors.password && <p className="text-xs font-medium text-red-500">{errors.password.message}</p>}

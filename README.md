@@ -67,6 +67,15 @@ Ensure you have the following installed:
    pnpm run db:migrate
    ```
 
+### Credentials
+```
+admin
+
+email: admin@admin.com
+password: admin@1234
+
+```
+
 ### Development
 
 To start the development servers for both the web app and the API concurrently, run:

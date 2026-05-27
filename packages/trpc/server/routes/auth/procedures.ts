@@ -29,8 +29,8 @@ export const loginWithGoogleOauthProcedure = async ({ input, ctx }: { input: Log
   ctx.createCookie("refreshToken", refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "development" ? false : true,
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
     path: "/",
   });
 
@@ -49,8 +49,8 @@ export const loginWithEmailAndPasswordProcedure = async ({ input, ctx }: { input
   ctx.createCookie("refreshToken", refreshToken!, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "development" ? false : true,
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
     path: "/",
   });
 
@@ -102,12 +102,11 @@ export const refreshAccessTokenProcedure = async ({ ctx }: { ctx: Context }) => 
   ctx.createCookie("refreshToken", newRefreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "development" ? false : true,
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
     path: "/",
   });
 
-  
   return { user, accessToken };
 };
 
@@ -133,8 +132,8 @@ export const verify2FACodeProcedure = async ({ input, ctx }: { input: Verify2FAC
   ctx.createCookie("refreshToken", refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: false,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "development" ? false : true,
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
     path: "/",
   });
 

@@ -50,8 +50,8 @@ export const loginWithEmailAndPasswordOutputSchema = z.object({
 export const registerWithEmailAndPasswordInputSchema = z.object({
   firstName: z.string().describe("First name of the user."),
   lastName: z.string().optional().describe("Last name of the user."),
-  email: z.email().describe("Email of the user."),
-  password: z.string().describe("Password of the user."),
+  email: z.email().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).describe("Email of the user."),
+  password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).describe("Password of the user."),
 });
 
 export const registerWithEmailAndPasswordOutputSchema = z.object({
