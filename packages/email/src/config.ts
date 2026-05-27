@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import {logger} from "@repo/logger";
 
 const transporter = nodemailer.createTransport({
-  service: 'Gmail',
+  service: process.env.NODEMAILER_SERVICE,
   auth: {
     user: process.env.NODEMAILER_USER,
     pass: process.env.NODEMAILER_PASS

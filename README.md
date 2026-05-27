@@ -1,135 +1,105 @@
-# Turborepo starter
+# 🍵 Chai Forms
 
-This Turborepo starter is maintained by the Turborepo core team.
+Chai Forms is a modern, high-performance, full-stack form builder application designed to make creating, managing, and sharing forms effortless. Built with a robust monorepo architecture, it leverages cutting-edge web technologies to deliver a seamless user experience and powerful developer tools.
 
-## Using this example
+## ✨ Features
 
-Run the following command:
+- **Drag-and-Drop Form Builder**: Intuitively build complex forms using a smooth drag-and-drop interface powered by `@dnd-kit`.
+- **Public Form Sharing**: Easily share published forms with generated unique URLs and QR codes.
+- **Robust Authentication**: Secure login flows utilizing `NextAuth` with support for Two-Factor Authentication (2FA) via OTP.
+- **Device-Based Rate Limiting**: Intelligent sliding-window rate limiting in Redis using client-side fingerprinting (`@fingerprintjs`) to prevent abuse of endpoints.
+- **Admin Analytics Dashboard**: Gain insights with a dedicated administrative dashboard and data visualization tools.
+- **Modern UI/UX**: Designed with a responsive, glassmorphic aesthetic using Tailwind CSS, Radix UI primitives, and Framer Motion (tw-animate-css) micro-animations.
+- **Type-Safe Full Stack**: End-to-end type safety from the database to the frontend using tRPC, Zod, and Drizzle ORM.
 
-```sh
-npx create-turbo@latest
+## 🏗️ Architecture
+
+Chai Forms is structured as a monorepo using **Turborepo** and **pnpm** workspaces. This setup allows for efficient code sharing, incredibly fast builds, and organized project structure.
+
+### 📦 Apps
+
+- **`apps/web`**: The main frontend application built with Next.js (App Router), React, Tailwind CSS, Redux Toolkit, and tRPC React Query integration.
+- **`apps/api`**: The backend API server built with Express, acting as the host for the tRPC server and handling secure form submission pipelines.
+
+### 🧩 Packages
+
+The shared packages within the `packages/` directory modularize the application logic:
+
+- **`@repo/database`**: Database schemas and migrations powered by **Drizzle ORM** and PostgreSQL.
+- **`@repo/trpc`**: Shared tRPC router definitions, procedures, and contexts ensuring API type-safety.
+- **`@repo/redis`**: Redis client configurations for caching and rate-limiting.
+- **`@repo/ai`**: AI integrations for form generation and analysis.
+- **`@repo/email`**: Email templates and dispatchers (used for 2FA OTPs and notifications).
+- **`@repo/services`**: Shared core business logic and utilities.
+- **`@repo/logger`**: Custom logging configurations for consistency across apps.
+- **`@repo/eslint-config` & `@repo/typescript-config`**: Shared linting and TypeScript configurations.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [pnpm](https://pnpm.io/) (v9.0.0 or higher)
+- [PostgreSQL](https://www.postgresql.org/) database
+- [Redis](https://redis.io/) server
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/amansaluja017/chai-forms.git
+   cd chai-forms
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pnpm install
+   ```
+
+3. **Environment Setup:**
+   Create `.env` files in the necessary directories (`apps/web`, `apps/api`, `packages/database`, etc.) based on the required `.env.example` configurations. You will need to supply credentials for Postgres, Redis, and your chosen Auth providers.
+
+4. **Database Setup:**
+   Run the database migrations and generate the Drizzle client:
+   ```bash
+   pnpm run db:generate
+   pnpm run db:migrate
+   ```
+
+### Development
+
+To start the development servers for both the web app and the API concurrently, run:
+
+```bash
+pnpm run dev
 ```
 
-## What's inside?
+This will leverage Turborepo to spin up:
+- **API Server** at `http://localhost:8000` (along with Swagger Docs at `/docs`)
+- **Web Client** at `http://localhost:3000`
 
-This Turborepo includes the following packages/apps:
+### Building for Production
 
-### Apps and Packages
+To build all apps and packages:
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+pnpm run build
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## 🛠️ Tech Stack
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+- **Framework**: [Next.js](https://nextjs.org/) & [Express](https://expressjs.com/)
+- **Monorepo**: [Turborepo](https://turbo.build/)
+- **Package Manager**: [pnpm](https://pnpm.io/)
+- **API/Data Fetching**: [tRPC](https://trpc.io/) & [React Query](https://tanstack.com/query/latest)
+- **Database**: PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/)
+- **Caching & Rate Limiting**: [Redis](https://redis.io/)
+- **Validation**: [Zod](https://zod.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Radix UI](https://www.radix-ui.com/)
+- **Drag & Drop**: [@dnd-kit](https://dndkit.com/)
+- **Authentication**: [NextAuth](https://next-auth.js.org/)
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## 📜 License
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+This project is licensed under the MIT License.
