@@ -228,7 +228,7 @@ class UserService {
         expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       });
 
-      const verificationLink = `http://localhost:3000/verify-email/${token}`;
+      const verificationLink = `${env.CLIENT_API_URL}/verify-email/${token}`;
       const mail = verificationMail(user.fullName, verificationLink);
       sendEmail(email, "Verify Your Email", mail).catch((error) => {
         logger.error(error);
