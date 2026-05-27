@@ -37,7 +37,7 @@ export default function ResultsPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 space-y-6">
           <div className="flex items-center gap-4 mb-4">
-            <Link href="/dashboard/forms">
+            <Link href="/forms">
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <IconArrowLeft className="size-4" />
               </Button>

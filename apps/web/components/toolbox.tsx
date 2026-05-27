@@ -2,6 +2,7 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { IconForms, IconTypography, IconNumber123, IconMail, IconPhone, IconMapPin, IconCheckbox, IconCircleDot, IconUpload, IconToggleLeft, IconCalendar, IconClock } from "@tabler/icons-react";
+import { useFormBuilder } from "./workspace/context";
 
 const FIELD_TYPES = [
   { type: "text", label: "Text Field", icon: IconTypography },
@@ -45,9 +46,11 @@ function DraggableTool({ type, label, icon: Icon }: { type: string, label: strin
 export function Toolbox() {
   return (
     <div className="w-full border border-white/10 bg-white/5 backdrop-blur-xl flex flex-col h-full overflow-y-auto rounded-2xl shadow-xl dark:bg-black/40">
-      <div className="p-5 border-b border-white/10">
-        <h3 className="font-bold tracking-tight">Components</h3>
-        <p className="text-xs text-muted-foreground mt-1">Drag fields to the canvas</p>
+      <div className="p-5 border-b border-white/10 flex flex-col gap-4">
+        <div>
+          <h3 className="font-bold tracking-tight">Components</h3>
+          <p className="text-xs text-muted-foreground mt-1">Drag fields to the canvas</p>
+        </div>
       </div>
       <div className="p-4 flex flex-col gap-2 flex-1">
         {FIELD_TYPES.map((field) => (

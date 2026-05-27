@@ -1,16 +1,39 @@
-import { IconEdit, IconChartBar, IconArchive, IconRestore, IconTrash } from "@tabler/icons-react";
+"use client";
+
+import { IconEdit, IconChartBar, IconArchive, IconRestore, IconTrash, IconPencil } from "@tabler/icons-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { useDeleteForm, useUpdateFormStatus } from "~/hooks/api/form/form.hook";
+import { useDeleteForm, useUpdateFormStatus, useUpdateForm } from "~/hooks/api/form/form.hook";
 import { GetUserFormsOutputType } from "@repo/services/form/model";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { useState } from "react";
 
 export default function FormCard({ form, isArchived, refetch }: { form: GetUserFormsOutputType[number]; isArchived: boolean, refetch: () => void }) {
     const { updateStatusAsync, isPending: isUpdating } = useUpdateFormStatus();
     const { deleteFormAsync, isPending: isDeleting } = useDeleteForm();
+    const { updateFormAsync, isPending: isSaving } = useUpdateForm();
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editTitle, setEditTitle] = useState(form.title);
+    const [editDescription, setEditDescription] = useState(form.description || "");
+
+    const handleSaveEdit = async () => {
+        try {
+            await updateFormAsync({ id: form.id, title: editTitle, description: editDescription });
+            toast.success("Form updated successfully");
+            setIsEditModalOpen(false);
+            refetch();
+        } catch (e) {
+            toast.error("Failed to update form");
+        }
+    };
 
     const handleRestore = async (id: string, currentVisibility: string = "unlisted") => {
         try {
@@ -51,7 +74,37 @@ export default function FormCard({ form, isArchived, refetch }: { form: GetUserF
 
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                    <CardTitle className="text-xl font-bold truncate pr-4">{form.title}</CardTitle>
+                    <div className="flex items-center gap-2 overflow-hidden pr-4">
+                        <CardTitle className="text-xl font-bold truncate">{form.title}</CardTitle>
+                        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground shrink-0">
+                                    <IconPencil className="size-3.5" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Edit Form Details</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="title">Title</Label>
+                                        <Input id="title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="description">Description</Label>
+                                        <Textarea id="description" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+                                    <Button onClick={handleSaveEdit} disabled={isSaving || !editTitle.trim()}>
+                                        {isSaving ? "Saving..." : "Save Changes"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                     <Badge variant={form.status === "published" ? "default" : "secondary"} className="capitalize shrink-0">
                         {form.status}
                     </Badge>

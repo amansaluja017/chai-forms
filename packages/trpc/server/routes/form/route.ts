@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema, getUserFormsOutputSchema } from "@repo/services/form/model";
+import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema, getUserFormsOutputSchema, generateFormWithAIInputSchema } from "@repo/services/form/model";
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
-import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure, updateFormFieldProcedure, getFormResponsesProcedure, getPublicFormsProcedure } from "./procedures";
+import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure, updateFormFieldProcedure, getFormResponsesProcedure, getPublicFormsProcedure, generateFormWithAIProcedure } from "./procedures";
 
 const TAGS = ["Forms"];
 const getPath = generatePath("/forms");
@@ -103,4 +103,10 @@ export const formRouter = router({
     .input(z.void())
     .output(getPublicFormsOutputSchema)
     .query(async () => await getPublicFormsProcedure()),
+
+  generateFormWithAI: protectedProcedure
+    .meta({ openapi: { method: "POST", path: getPath("/{formId}/generate-ai"), tags: TAGS } })
+    .input(generateFormWithAIInputSchema)
+    .output(z.any())
+    .mutation(async ({ input, ctx }) => await generateFormWithAIProcedure({ input, ctx })),
 });

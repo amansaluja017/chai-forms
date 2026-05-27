@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { FormFieldType } from "@repo/services/form/model";
 
 interface FormBuilderContextType {
@@ -28,6 +28,10 @@ export const FormBuilderProvider = ({
 }) => {
   const [fields, setFields] = useState<FormFieldType[]>(initialFields);
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFields(initialFields);
+  }, [initialFields]);
 
   const addField = (field: FormFieldType) => {
     setFields((prev) => [...prev, field]);

@@ -38,6 +38,18 @@ export const useCreateForm = () => {
     };
 };
 
+export const useUpdateForm = () => {
+    const { mutate: updateForm, mutateAsync: updateFormAsync, isPending, isError, error } = trpc.form.updateForm.useMutation();
+
+    return {
+        updateForm,
+        updateFormAsync,
+        isPending,
+        isError,
+        error
+    };
+};
+
 export const useDeleteForm = () => {
     const { mutate: deleteForm, mutateAsync: deleteFormAsync, isPending, isError, error } = trpc.form.deleteForm.useMutation();
 
@@ -135,4 +147,9 @@ export const useGetFormResponses = (id: string) => {
 export const useGetPublicForms = () => {
     const { data, isLoading, refetch, isError, error } = trpc.form.getPublicForms.useQuery();
     return { data, isLoading, refetch, isError, error };
+};
+
+export const useGenerateFormWithAI = () => {
+    const { mutate: generateWithAI, mutateAsync: generateWithAIAsync, isPending, isError, error } = trpc.form.generateFormWithAI.useMutation();
+    return { generateWithAI, generateWithAIAsync, isPending, isError, error };
 };

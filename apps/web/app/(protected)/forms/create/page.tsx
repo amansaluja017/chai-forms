@@ -29,7 +29,7 @@ export default function CreateFormPage() {
       await createFormAsync(data);
       toast.success("Form created successfully!");
       utils.form.getForms.invalidate();
-      router.push("/dashboard/forms");
+      router.push("/forms");
     } catch (e) {
       toast.error("Failed to create form");
     }

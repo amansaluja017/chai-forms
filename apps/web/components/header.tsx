@@ -73,7 +73,7 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
   return (
     <>
       <header className="flex h-16 items-center gap-4 border-b border-white/10 bg-white/5 backdrop-blur-xl px-6 shadow-sm z-50 dark:bg-black/40">
-        <Link href="/dashboard/forms">
+        <Link href="/forms">
           <Button variant="ghost" size="icon" className="rounded-full">
             <IconArrowLeft className="size-5" />
           </Button>

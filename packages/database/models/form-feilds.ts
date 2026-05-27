@@ -8,6 +8,7 @@ import {
   unique,
   pgEnum,
   doublePrecision,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { formTable } from "./form";
 
@@ -40,6 +41,8 @@ export const formFieldsTable = pgTable("form_fields", {
 
   orderIndex: doublePrecision("order_index").notNull(),
   labelKey: varchar("label_key", { length: 255 }).notNull(),
+
+  validation: jsonb("validation"),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),

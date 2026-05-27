@@ -15,6 +15,11 @@ export const formIdInputSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const generateFormWithAIInputSchema = z.object({
+  formId: z.string().uuid(),
+  prompt: z.string().min(1).max(2000),
+});
+
 export const formOutputSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
@@ -28,6 +33,7 @@ export type CreateFormInputType = z.infer<typeof createFormInputSchema>;
 export type UpdateFormInputType = z.infer<typeof updateFormInputSchema>;
 export type FormIdInputType = z.infer<typeof formIdInputSchema>;
 export type FormOutputType = z.infer<typeof formOutputSchema>;
+export type GenerateFormWithAIInputType = z.infer<typeof generateFormWithAIInputSchema>;
 
 export const fieldTypeSchema = z.enum([
   "text", "number", "email", "phone", "address", "checkbox", 
@@ -41,6 +47,13 @@ export const formOptionSchema = z.object({
   orderIndex: z.number()
 });
 
+export const fieldValidationSchema = z.object({
+  min: z.number().optional(),
+  max: z.number().optional(),
+  pattern: z.string().optional(),
+  message: z.string().optional(),
+});
+
 export const formFieldSchema = z.object({
   id: z.string().uuid().optional(),
   formId: z.string().uuid(),
@@ -52,6 +65,7 @@ export const formFieldSchema = z.object({
   orderIndex: z.number(),
   labelKey: z.string(),
   options: z.array(formOptionSchema).optional(),
+  validation: fieldValidationSchema.nullable().optional(),
 });
 
 export const saveFormFieldsInputSchema = z.object({

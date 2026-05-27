@@ -12,13 +12,23 @@ import { useEffect, useRef } from "react";
 import { useTrackFormView } from "~/hooks/api/analytics/analytics.hook";
 import renderFieldInput from "./render-file-input";
 
+function stringToRegex(str: string) {
+  const match = str.match(/^\/(.+)\/([gimsuy]*)$/);
+
+  if (!match) {
+    throw new Error("Invalid regex string");
+  }
+
+  return new RegExp(match[1]!, match[2]);
+}
+
 export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOutputType, isPreview?: boolean }) {
   const fields = form.fields || [];
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isMockSubmitting, setIsMockSubmitting] = useState(false);
-  
+
   const { submitResponseAsync, isPending } = useSubmitFormResponse();
   const { trackViewAsync } = useTrackFormView();
   const startTime = useRef(Date.now());
@@ -51,10 +61,49 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
 
   const handleNext = async () => {
     // Validate current field
-    if (currentField.isRequired && !responses[currentField.id!]) {
+    const val = responses[currentField.id!] || "";
+
+    if (currentField.isRequired && !val) {
       toast.error("This field is required");
       return;
     }
+
+    if (currentField.validation && val) {
+      const { min, max, pattern, message } = currentField.validation;
+      const isNumber = currentField.type === "number";
+
+      if (min !== undefined) {
+        if (isNumber && Number(val) < min) {
+          toast.error(message || `Minimum value is ${min}`);
+          return;
+        } else if (!isNumber && val.length < min) {
+          toast.error(message || `Minimum length is ${min} characters`);
+          return;
+        }
+      }
+
+      if (max !== undefined) {
+        if (isNumber && Number(val) > max) {
+          toast.error(message || `Maximum value is ${max}`);
+          return;
+        } else if (!isNumber && val.length > max) {
+          toast.error(message || `Maximum length is ${max} characters`);
+          return;
+        }
+      }
+
+      if (pattern && !isNumber) {
+        try {
+          const regex = stringToRegex(pattern);
+          if (!regex.test(val)) {
+            toast.error(message || "Invalid format");
+            return;
+          }
+        } catch (e) {
+          console.log("ignoring invalid regex pattern", e);
+        }
+      }
+    };
 
     if (isLastStep) {
       if (isPreview) {
@@ -80,7 +129,7 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
           response: payload,
           timeToComplete
         });
-        
+
         setIsSubmitted(true);
       } catch (error) {
         toast.error("Failed to submit response. Please try again.");
@@ -140,17 +189,17 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
       </Card>
 
       <div className="flex items-center justify-between">
-        <Button 
-          variant="outline" 
-          onClick={handleBack} 
+        <Button
+          variant="outline"
+          onClick={handleBack}
           disabled={currentStep === 0 || isFormPending}
           className="gap-2"
         >
           <IconChevronLeft className="size-4" />
           Back
         </Button>
-        <Button 
-          onClick={handleNext} 
+        <Button
+          onClick={handleNext}
           disabled={isFormPending}
           className="gap-2"
         >

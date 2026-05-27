@@ -1,6 +1,8 @@
 import db, { eq, and, inArray, asc, not } from "@repo/database";
 import { formTable, formFieldsTable, formFeildOptions, formStatusTable, responsesTable, usersTable } from "@repo/database/schema";
-import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType } from "./model";
+import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, updateFormInputSchema, updateFormFieldInputSchema, GenerateFormWithAIInputType } from "./model";
+import { generateFormFieldsSchema } from "@repo/ai";
+import { sendEmail, formSubmittedCreatorMail, formSubmittedResponderMail } from "@repo/email";
 
 class FormService {
   public async createForm(userId: string, input: CreateFormInputType) {
@@ -32,14 +34,14 @@ class FormService {
       updatedAt: formTable.updatedAt,
       status: formStatusTable.status,
     })
-    .from(formTable)
-    .innerJoin(formStatusTable, eq(formTable.id, formStatusTable.formId))
-    .where(
-      and(
-        eq(formTable.createdBy, userId),
-        not(eq(formStatusTable.status, "deleted"))
-      )
-    );
+      .from(formTable)
+      .innerJoin(formStatusTable, eq(formTable.id, formStatusTable.formId))
+      .where(
+        and(
+          eq(formTable.createdBy, userId),
+          not(eq(formStatusTable.status, "deleted"))
+        )
+      );
 
     return forms;
   }
@@ -48,9 +50,9 @@ class FormService {
     const conditions = isAdmin
       ? eq(formTable.id, input.id)
       : and(
-          eq(formTable.id, input.id), 
-          eq(formTable.createdBy, userId)
-        );
+        eq(formTable.id, input.id),
+        eq(formTable.createdBy, userId)
+      );
 
     const [formRecord] = await db.select({
       form: formTable,
@@ -104,7 +106,7 @@ class FormService {
     const form = await this.getFormById(userId, input, isAdmin);
 
     const fields = await db.select().from(formFieldsTable).where(eq(formFieldsTable.formId, form.id)).orderBy(formFieldsTable.orderIndex);
-    
+
     // get options for fields that have them
     const fieldIds = fields.map(f => f.id);
     let allOptions: any[] = [];
@@ -136,7 +138,7 @@ class FormService {
     await db.transaction(async (tx) => {
       // Delete existing options
       await tx.delete(formFeildOptions).where(
-        inArray(formFeildOptions.formFeildId, 
+        inArray(formFeildOptions.formFeildId,
           tx.select({ id: formFieldsTable.id }).from(formFieldsTable).where(eq(formFieldsTable.formId, input.formId))
         )
       );
@@ -146,7 +148,7 @@ class FormService {
       // Re-insert fields
       for (const field of input.fields) {
         const [insertedField] = await tx.insert(formFieldsTable).values({
-          id: field.id || undefined, 
+          id: field.id || undefined,
           formId: input.formId,
           label: field.label,
           type: field.type,
@@ -229,22 +231,25 @@ class FormService {
   };
 
   public async updateFormField(userId: string, input: UpdateFormFieldInputType) {
+    const { id, type, label, isRequired, placeHolder, description, orderIndex, labelKey, options, validation } = updateFormFieldInputSchema.parse(input);
+
     await this.getFormById(userId, { id: input.formId });
 
     await db.update(formFieldsTable).set({
-      label: input.label,
-      type: input.type,
-      isRequired: input.isRequired,
-      placeHolder: input.placeHolder,
-      description: input.description,
-      orderIndex: input.orderIndex,
-      labelKey: input.labelKey,
-    }).where(and(eq(formFieldsTable.id, input.id), eq(formFieldsTable.formId, input.formId)));
+      label,
+      type,
+      isRequired,
+      placeHolder,
+      description,
+      orderIndex,
+      labelKey,
+      validation
+    }).where(and(eq(formFieldsTable.id, id), eq(formFieldsTable.formId, input.formId)));
 
-    if (input.options && input.options.length > 0) {
-      await db.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, input.id));
-      const optionsToInsert = input.options.map(opt => ({
-        formFeildId: input.id,
+    if (options && options.length > 0) {
+      await db.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, id));
+      const optionsToInsert = options.map(opt => ({
+        formFeildId: id,
         label: opt.label,
         value: opt.value,
         orderIndex: opt.orderIndex
@@ -337,11 +342,62 @@ class FormService {
       throw new Error("Cannot submit response: Form is not published.");
     }
 
+    // Fetch form creator and form details
+    const [formData] = await db.select({
+      formTitle: formTable.title,
+      creatorName: usersTable.fullName,
+      creatorEmail: usersTable.email,
+    })
+      .from(formTable)
+      .innerJoin(usersTable, eq(formTable.createdBy, usersTable.id))
+      .where(eq(formTable.id, input.formId))
+      .limit(1);
+
+    // Fetch form fields to identify email fields
+    const formFields = await db.select({
+      id: formFieldsTable.id,
+      type: formFieldsTable.type,
+    })
+      .from(formFieldsTable)
+      .where(eq(formFieldsTable.formId, input.formId));
+
     await db.insert(responsesTable).values({
       formId: input.formId,
       response: input.response,
       timeToComplete: input.timeToComplete,
     });
+
+    // Send Emails Asynchronously
+    if (formData) {
+      // Find responder's email if available
+      let responderEmail: string | null = null;
+      for (const field of formFields) {
+        if (field.type === "email") {
+          const responseField = input.response.find((r: any) => r.formFieldId === field.id);
+          if (responseField && responseField.value && responseField.value.trim() !== "") {
+            responderEmail = responseField.value.trim();
+            break; // Stop at first email field found
+          }
+        }
+      }
+
+      Promise.allSettled([
+        // Send email to creator
+        sendEmail(
+          formData.creatorEmail,
+          `New Response on "${formData.formTitle}"`,
+          formSubmittedCreatorMail(formData.creatorName, formData.formTitle)
+        ),
+        // Send email to responder if email was provided
+        responderEmail
+          ? sendEmail(
+              responderEmail,
+              `Submission Successful: ${formData.formTitle}`,
+              formSubmittedResponderMail(formData.formTitle)
+            )
+          : Promise.resolve()
+      ]).catch(console.error); // Catch any unexpected errors from Promise.allSettled itself
+    }
 
     return { success: true };
   }
@@ -399,6 +455,127 @@ class FormService {
       .orderBy(asc(formTable.createdAt));
 
     return publicForms;
+  }
+
+  public async generateFormWithAI(userId: string, input: GenerateFormWithAIInputType) {
+    // Fetch the existing form context
+    const existingForm = await this.getFormWorkspace(userId, { id: input.formId });
+
+    // Provide context to AI so it knows what to modify
+    const existingContextStr = JSON.stringify({
+      title: existingForm.title,
+      description: existingForm.description,
+      fields: existingForm.fields.map((f: any) => ({
+        id: f.id,
+        label: f.label,
+        type: f.type,
+        isRequired: f.isRequired,
+        description: f.description,
+        options: f.options
+      }))
+    });
+
+    const aiResponse = await generateFormFieldsSchema(input.prompt, existingContextStr);
+
+    if (!aiResponse || typeof aiResponse !== "object") {
+      throw new Error("Invalid schema generated by AI");
+    }
+
+    const { title, description, fieldsToCreate = [], fieldsToUpdate = [], fieldsToDelete = [] } = aiResponse;
+
+    await db.transaction(async (tx) => {
+      // 1. Update Title & Description
+      if ((title && title !== existingForm.title) || (description !== undefined && description !== existingForm.description)) {
+        await tx.update(formTable).set({
+          title: title || existingForm.title,
+          description: description !== undefined ? description : existingForm.description,
+        }).where(eq(formTable.id, input.formId));
+      }
+
+      // 2. Delete fields
+      if (Array.isArray(fieldsToDelete) && fieldsToDelete.length > 0) {
+        for (const fieldId of fieldsToDelete) {
+          if (typeof fieldId === "string") {
+            await tx.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, fieldId));
+            await tx.delete(formFieldsTable).where(and(eq(formFieldsTable.id, fieldId), eq(formFieldsTable.formId, input.formId)));
+          }
+        }
+      }
+
+      // 3. Update fields
+      if (Array.isArray(fieldsToUpdate) && fieldsToUpdate.length > 0) {
+        for (const field of fieldsToUpdate) {
+          if (!field.id) continue;
+          
+          await tx.update(formFieldsTable).set({
+            label: field.label,
+            type: field.type,
+            isRequired: field.isRequired,
+            placeHolder: field.placeHolder,
+            description: field.description,
+          }).where(and(eq(formFieldsTable.id, field.id), eq(formFieldsTable.formId, input.formId)));
+
+          if (field.options && Array.isArray(field.options)) {
+            await tx.delete(formFeildOptions).where(eq(formFeildOptions.formFeildId, field.id));
+            if (field.options.length > 0) {
+              let optOrder = 0;
+              const optionsToInsert = field.options.map((opt: any) => ({
+                id: crypto.randomUUID(),
+                formFeildId: field.id,
+                label: opt.label || `Option ${optOrder + 1}`,
+                value: opt.value || `option_${optOrder + 1}`,
+                orderIndex: opt.orderIndex || optOrder++
+              }));
+              await tx.insert(formFeildOptions).values(optionsToInsert);
+            }
+          }
+        }
+      }
+
+      // 4. Create new fields
+      if (Array.isArray(fieldsToCreate) && fieldsToCreate.length > 0) {
+        const [lastField] = await tx.select({ orderIndex: formFieldsTable.orderIndex })
+          .from(formFieldsTable)
+          .where(eq(formFieldsTable.formId, input.formId))
+          .orderBy(asc(formFieldsTable.orderIndex))
+          .limit(1);
+
+        let currentOrderIndex = (lastField?.orderIndex || 0) + 1;
+
+        for (const field of fieldsToCreate) {
+          const fieldId = crypto.randomUUID();
+          const labelKey = field.label ? field.label.toLowerCase().replace(/[^a-z0-9]/g, "_").substring(0, 50) : "untitled";
+
+          const [insertedField] = await tx.insert(formFieldsTable).values({
+            id: fieldId,
+            formId: input.formId,
+            label: field.label || "Untitled Field",
+            type: field.type || "text",
+            isRequired: field.isRequired || false,
+            placeHolder: field.placeHolder,
+            description: field.description,
+            orderIndex: currentOrderIndex++,
+            labelKey: labelKey,
+          }).returning();
+
+          if (!insertedField) continue;
+
+          if (field.options && Array.isArray(field.options) && field.options.length > 0) {
+            let optOrder = 0;
+            const optionsToInsert = field.options.map((opt: any) => ({
+              id: crypto.randomUUID(),
+              formFeildId: insertedField.id,
+              label: opt.label || `Option ${optOrder + 1}`,
+              value: opt.value || `option_${optOrder + 1}`,
+              orderIndex: opt.orderIndex || optOrder++
+            }));
+            await tx.insert(formFeildOptions).values(optionsToInsert);
+          }
+        }
+      }
+    });
+
+    return { success: true };
   }
 }
 

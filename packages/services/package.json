@@ -10,10 +10,11 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@repo/redis": "workspace:*",
+    "@repo/ai": "workspace:^",
     "@repo/database": "workspace:*",
     "@repo/email": "workspace:*",
     "@repo/logger": "workspace:*",
+    "@repo/redis": "workspace:*",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",

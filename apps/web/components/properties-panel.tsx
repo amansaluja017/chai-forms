@@ -207,6 +207,80 @@ export function PropertiesPanel() {
           <Switch id="prop-required" checked={selectedField.isRequired} onCheckedChange={(c) => handleUpdate("isRequired", c)} />
         </div>
 
+        <div className="space-y-4 pt-4 border-t">
+          <Label className="font-semibold text-primary">Validation Rules</Label>
+          
+          {(selectedField.type === "text" || selectedField.type === "email" || selectedField.type === "phone" || selectedField.type === "address") && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="val-min" className="text-xs">Min Length</Label>
+                  <Input 
+                    id="val-min" 
+                    type="number" 
+                    value={selectedField.validation?.min || ""} 
+                    onChange={(e) => handleUpdate("validation", { ...selectedField.validation, min: e.target.value ? Number(e.target.value) : undefined })} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="val-max" className="text-xs">Max Length</Label>
+                  <Input 
+                    id="val-max" 
+                    type="number" 
+                    value={selectedField.validation?.max || ""} 
+                    onChange={(e) => handleUpdate("validation", { ...selectedField.validation, max: e.target.value ? Number(e.target.value) : undefined })} 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="val-pattern" className="text-xs">Regex Pattern</Label>
+                <Input 
+                  id="val-pattern" 
+                  value={selectedField.validation?.pattern || ""} 
+                  onChange={(e) => handleUpdate("validation", { ...selectedField.validation, pattern: e.target.value || undefined })} 
+                  placeholder="^\\d{10}$"
+                />
+              </div>
+            </>
+          )}
+
+          {selectedField.type === "number" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="val-min" className="text-xs">Min Value</Label>
+                <Input 
+                  id="val-min" 
+                  type="number" 
+                  value={selectedField.validation?.min || ""} 
+                  onChange={(e) => handleUpdate("validation", { ...selectedField.validation, min: e.target.value ? Number(e.target.value) : undefined })} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="val-max" className="text-xs">Max Value</Label>
+                <Input 
+                  id="val-max" 
+                  type="number" 
+                  value={selectedField.validation?.max || ""} 
+                  onChange={(e) => handleUpdate("validation", { ...selectedField.validation, max: e.target.value ? Number(e.target.value) : undefined })} 
+                />
+              </div>
+            </div>
+          )}
+
+          {["text", "email", "phone", "address", "number"].includes(selectedField.type) && (
+            <div className="space-y-2">
+              <Label htmlFor="val-message" className="text-xs">Custom Error Message</Label>
+              <Input 
+                id="val-message" 
+                value={selectedField.validation?.message || ""} 
+                onChange={(e) => handleUpdate("validation", { ...selectedField.validation, message: e.target.value || undefined })} 
+                placeholder="Invalid input"
+              />
+            </div>
+          )}
+        </div>
+
+
         {hasOptions && (
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between">
