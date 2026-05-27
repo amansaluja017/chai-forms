@@ -1,6 +1,6 @@
 import db, { eq, and, inArray, asc, not } from "@repo/database";
 import { formTable, formFieldsTable, formFeildOptions, formStatusTable, responsesTable, usersTable } from "@repo/database/schema";
-import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, updateFormInputSchema, updateFormFieldInputSchema, GenerateFormWithAIInputType } from "./model";
+import { CreateFormInputType, UpdateFormInputType, FormIdInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, updateFormInputSchema, updateFormFieldInputSchema, GenerateFormWithAIInputType, GetPublicFormWorkspaceInputType } from "./model";
 import { generateFormFieldsSchema } from "@repo/ai";
 import { sendEmail, formSubmittedCreatorMail, formSubmittedResponderMail } from "@repo/email";
 
@@ -183,17 +183,18 @@ class FormService {
 
     const [existing] = await db.select().from(formStatusTable).where(eq(formStatusTable.formId, input.formId));
 
+    const values = {
+      formId: input.formId,
+      status: input.status,
+      visibility: input.visibility,
+      isProtected: input.isProtected,
+      password: input.password || null,
+    }
+
     if (existing) {
-      await db.update(formStatusTable).set({
-        status: input.status,
-        visibility: input.visibility
-      }).where(eq(formStatusTable.formId, input.formId));
+      await db.update(formStatusTable).set(values).where(eq(formStatusTable.formId, input.formId));
     } else {
-      await db.insert(formStatusTable).values({
-        formId: input.formId,
-        status: input.status,
-        visibility: input.visibility
-      });
+      await db.insert(formStatusTable).values(values);
     }
 
     return { success: true };
@@ -283,7 +284,7 @@ class FormService {
     return { success: true };
   };
 
-  public async getPublicFormWorkspace(input: FormIdInputType) {
+  public async getPublicFormWorkspace(input: GetPublicFormWorkspaceInputType) {
     const [formRecord] = await db.select()
       .from(formTable)
       .where(eq(formTable.id, input.id))
@@ -298,6 +299,15 @@ class FormService {
 
     if (!statusRecord || statusRecord.status !== "published") {
       throw new Error("Form is not published");
+    }
+
+    if (statusRecord.isProtected) {
+      if (!input.password || input.password !== statusRecord.password) {
+        return {
+          isProtected: true,
+          isPasswordInvalid: !!input.password, // true if they provided a wrong password
+        };
+      }
     }
 
     const fields = await db.select()
@@ -318,7 +328,7 @@ class FormService {
       ...field,
       orderIndex: Number(field.orderIndex),
       options: allOptions
-        .filter(o => o.formFeildId === field.id)
+        .filter(opt => opt.formFeildId === field.id)
         .map(opt => ({
           ...opt,
           orderIndex: Number(opt.orderIndex)
@@ -326,9 +336,11 @@ class FormService {
     }));
 
     return {
-      ...formRecord,
-      fields: fieldsWithOptions,
-      status: statusRecord
+      isProtected: false,
+      form: {
+        ...formRecord,
+        fields: fieldsWithOptions,
+      }
     } as any;
   }
 
@@ -391,10 +403,10 @@ class FormService {
         // Send email to responder if email was provided
         responderEmail
           ? sendEmail(
-              responderEmail,
-              `Submission Successful: ${formData.formTitle}`,
-              formSubmittedResponderMail(formData.formTitle)
-            )
+            responderEmail,
+            `Submission Successful: ${formData.formTitle}`,
+            formSubmittedResponderMail(formData.formTitle)
+          )
           : Promise.resolve()
       ]).catch(console.error); // Catch any unexpected errors from Promise.allSettled itself
     }
@@ -506,7 +518,7 @@ class FormService {
       if (Array.isArray(fieldsToUpdate) && fieldsToUpdate.length > 0) {
         for (const field of fieldsToUpdate) {
           if (!field.id) continue;
-          
+
           await tx.update(formFieldsTable).set({
             label: field.label,
             type: field.type,

@@ -100,7 +100,7 @@ export function FormWizard({ form, isPreview = false }: { form: FormWorkspaceOut
             return;
           }
         } catch (e) {
-          console.log("ignoring invalid regex pattern", e);
+          console.warn("ignoring invalid regex pattern", e);
         }
       }
     };

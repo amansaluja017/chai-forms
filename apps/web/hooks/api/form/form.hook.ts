@@ -119,8 +119,8 @@ export const useReorderFormFields = () => {
     return { reorderFieldsAsync, isPending };
 };
 
-export const useGetPublicFormWorkspace = (id: string) => {
-    const { data, isLoading, isError, error, refetch } = trpc.form.getPublicFormWorkspace.useQuery({ id }, {
+export const useGetPublicFormWorkspace = (id: string, password?: string) => {
+    const { data, isLoading, isError, error, refetch } = trpc.form.getPublicFormWorkspace.useQuery({ id, password }, {
         enabled: !!id,
         retry: false, // Don't retry if not published/found
     });

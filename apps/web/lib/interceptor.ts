@@ -1,12 +1,14 @@
 import { store } from "~/app/slice/config";
 import refreshAccessToken from "./refresh";
 import { refresh } from "~/app/slice/userSlice";
+import { getDeviceFingerprint } from "./fingerprint";
 
 export async function customFetch(
   input: RequestInfo | URL,
   init?: RequestInit
 ) {
   let token = store.getState().user.accessToken;
+  const fingerprint = await getDeviceFingerprint();
 
   let response = await fetch(input, {
     ...init,
@@ -15,6 +17,7 @@ export async function customFetch(
       Authorization: token
         ? `Bearer ${token}`
         : "",
+      "x-device-fingerprint": fingerprint,
     },
     credentials: "include",
   });
@@ -34,6 +37,7 @@ export async function customFetch(
             headers: {
               ...init?.headers,
               Authorization: `Bearer ${accessToken}`,
+              "x-device-fingerprint": fingerprint,
             },
             credentials: "include",
           });

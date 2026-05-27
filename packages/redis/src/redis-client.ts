@@ -9,18 +9,18 @@ export const client = createClient({
     }
 });
 
-client.on('error', err => console.log('Redis Client Error', err));
+client.on('error', err => console.error('Redis Client Error', err));
 
 export async function connectRedis() {
   if (!client.isOpen) {
     await client.connect();
-    console.log("Redis Connected");
+    console.info("Redis Connected");
   }
 }
 
 export async function disconnectRedis() {
   if (client.isOpen) {
     await client.disconnect();
-    console.log("Redis Disconnected");
+    console.info("Redis Disconnected");
   }
 };

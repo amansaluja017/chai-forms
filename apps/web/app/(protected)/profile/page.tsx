@@ -42,7 +42,7 @@ function Profile() {
             
             toast.success(user.is2FAEnabled ? "2FA disabled successfully" : "2FA enabled successfully");
         } catch (e) {
-            console.log("toggle2FAError", toggle2FAError);
+            console.error("toggle2FAError", toggle2FAError);
             toast.error("Failed to update 2FA settings");
         }
     };

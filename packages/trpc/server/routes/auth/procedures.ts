@@ -1,6 +1,19 @@
 import { LoginWithEmailAndPasswordInputType, LoginWithGoogleOauthInputSchema, LogoutInputType, PasswordResetLinkInputType, RegisterWithEmailAndPasswordInputType, Resend2FACodeInputType, ResendVerificationEmailInputType, ResetPasswordInputType, Verify2FACodeInputType, VerifyEmailInputType } from "@repo/services/user/model";
 import { userService } from "../../services";
 import { Context } from "../../context";
+import { TRPCError } from "@trpc/server";
+import { checkRateLimit } from "@repo/redis/src/rate-limiting";
+
+const requireRateLimit = async (ctx: Context, action: string, limit: number, windowSecs: number) => {
+  const key = ctx.fingerprint ? `rate_limit:${action}:fp:${ctx.fingerprint}` : `rate_limit:${action}:ip:${ctx.ip || 'unknown'}`;
+  const { success } = await checkRateLimit(key, limit, windowSecs);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many requests. Please try again later.",
+    });
+  }
+};
 
 
 export const getSupportedAuthenticationProcedure = async () => {
@@ -25,6 +38,8 @@ export const loginWithGoogleOauthProcedure = async ({ input, ctx }: { input: Log
 };
 
 export const loginWithEmailAndPasswordProcedure = async ({ input, ctx }: { input: LoginWithEmailAndPasswordInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "login", 5, 60);
+
   const { user, accessToken, refreshToken, is2FAEnabled } = await userService.loginWithEmailAndPassword(input);
 
   if (is2FAEnabled) {
@@ -42,13 +57,17 @@ export const loginWithEmailAndPasswordProcedure = async ({ input, ctx }: { input
   return { user, accessToken, is2FAEnabled: false };
 };
 
-export const resend2FACodeProcedure = async ({ input }: { input: Resend2FACodeInputType }) => {
+export const resend2FACodeProcedure = async ({ input, ctx }: { input: Resend2FACodeInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "resend2fa", 3, 3600);
+  
   const { id, is2FAEnabled } = await userService.resend2FACode(input);
 
   return { id, is2FAEnabled };
 };
 
-export const registerWithEmailAndPasswordProcedure = async ({ input }: { input: RegisterWithEmailAndPasswordInputType }) => {
+export const registerWithEmailAndPasswordProcedure = async ({ input, ctx }: { input: RegisterWithEmailAndPasswordInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "signup", 3, 3600);
+
   const { id } = await userService.registerWithEmailAndPassword(input);
 
   return { id };
@@ -62,7 +81,8 @@ export const resendVerificationEmailProcedure = async ({ input }: { input: Resen
   await userService.resendVerificationEmail(input);
 };
 
-export const passwordResetLinkProcedure = async ({ input }: { input: PasswordResetLinkInputType }) => {
+export const passwordResetLinkProcedure = async ({ input, ctx }: { input: PasswordResetLinkInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "password_reset", 3, 3600);
   await userService.passwordResetLink(input);
 };
 

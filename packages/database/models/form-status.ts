@@ -3,6 +3,8 @@ import {
   uuid,
   timestamp,
   pgEnum,
+  boolean,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { formTable } from "./form";
 
@@ -16,6 +18,9 @@ export const formStatusTable = pgTable("form_status", {
 
   status: statusEnum("status").default("draft").notNull(),
   visibility: visibilityEnum("visibility").default("public").notNull(),
+
+  isProtected: boolean("is_protected").default(false).notNull(),
+  password: varchar("password", {length: 100}),
 
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
 });

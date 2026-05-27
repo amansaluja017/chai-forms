@@ -12,12 +12,12 @@ export function SiteHeader() {
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-4"
         />
-        <h1 className="text-base font-medium">Documents</h1>
+        <h1 className="text-base font-medium">Chai Forms</h1>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             <a
-              href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
+              href="https://github.com/amansaluja017/chai-forms.git"
               rel="noopener noreferrer"
               target="_blank"
               className="dark:text-foreground"

@@ -46,6 +46,8 @@ export default function FormWorkspacePage() {
             formName={workspace.title}
             initialStatus={workspace.status?.status || "draft"}
             initialVisibility={workspace.status?.visibility || "public"}
+            initialIsProtected={workspace.status?.isProtected || false}
+            initialPassword={workspace.status?.password || null}
           />
 
           <BuilderDndContext>

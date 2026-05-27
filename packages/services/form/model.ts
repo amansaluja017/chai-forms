@@ -37,7 +37,7 @@ export type GenerateFormWithAIInputType = z.infer<typeof generateFormWithAIInput
 
 export const fieldTypeSchema = z.enum([
   "text", "number", "email", "phone", "address", "checkbox", 
-  "radio", "file", "yes_no", "date", "datetime", "time", "dropdown"
+  "radio", "file", "yes_no", "date", "datetime", "time", "dropdown", "rating"
 ]);
 
 export const formOptionSchema = z.object({
@@ -77,6 +77,8 @@ export const formStatusSchema = z.object({
   formId: z.string().uuid(),
   status: z.enum(["draft", "published", "archived", "deleted"]).default("draft"),
   visibility: z.enum(["public", "unlisted"]).default("public"),
+  isProtected: z.boolean().default(false),
+  password: z.string().nullable().optional(),
 });
 
 export const formWorkspaceOutputSchema = formOutputSchema.extend({
@@ -162,3 +164,18 @@ export const getPublicFormsOutputSchema = z.array(z.object({
 }));
 
 export type GetPublicFormsOutputType = z.infer<typeof getPublicFormsOutputSchema>;
+
+export const getPublicFormWorkspaceInputSchema = z.object({
+  id: z.string().uuid(),
+  password: z.string().optional(),
+});
+
+export type GetPublicFormWorkspaceInputType = z.infer<typeof getPublicFormWorkspaceInputSchema>;
+
+export const getPublicFormWorkspaceOutputSchema = z.object({
+  isProtected: z.boolean(),
+  isPasswordInvalid: z.boolean().optional(),
+  form: formWorkspaceOutputSchema.omit({ status: true }).optional(),
+});
+
+export type GetPublicFormWorkspaceOutputType = z.infer<typeof getPublicFormWorkspaceOutputSchema>;

@@ -8,6 +8,8 @@ type TRPCContext = {
     clearCookie: ReturnType<typeof clearCookieFactory>
     user?: Awaited<ReturnType<typeof verifyJwt>> | null;
     isJwtExpired?: boolean;
+    fingerprint: string | null;
+    ip: string | null;
 };
 
 export async function createContext({ req, res }: CreateExpressContextOptions): Promise<TRPCContext> {
@@ -23,7 +25,7 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
             if (error instanceof Error && error.message === "JWTEXPIRED") {
                 isJwtExpired = true;
             }
-            console.log(error);
+            console.error("JWT Verify Error:", error);
         }
     } else {
         user = null;
@@ -34,7 +36,9 @@ export async function createContext({ req, res }: CreateExpressContextOptions): 
         getCookie: getCookieFactory(req),
         clearCookie: clearCookieFactory(res),
         user,
-        isJwtExpired
+        isJwtExpired,
+        fingerprint: (req.headers["x-device-fingerprint"] as string) || null,
+        ip: req.ip || req.socket?.remoteAddress || null,
     };
 
     return ctx;

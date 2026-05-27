@@ -3,6 +3,7 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { IconStar, IconStarFilled } from "@tabler/icons-react";
 
 export default function renderFieldInput(field: any, value: string, onChange: (val: string) => void) {
   switch (field.type) {
@@ -141,6 +142,26 @@ export default function renderFieldInput(field: any, value: string, onChange: (v
             }}
             className="text-lg py-3 cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
           />
+        </div>
+      );
+
+    case "rating":
+      return (
+        <div className="flex gap-2 items-center">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => onChange(star.toString())}
+              className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full p-1 hover:scale-110 transition-transform"
+            >
+              {Number(value) >= star ? (
+                <IconStarFilled className="size-8 text-yellow-500" />
+              ) : (
+                <IconStar className="size-8 text-muted-foreground/30 hover:text-yellow-500/50 transition-colors" />
+              )}
+            </button>
+          ))}
         </div>
       );
 

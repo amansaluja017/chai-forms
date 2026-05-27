@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Streamyst",
-  description: "Media Forwarding",
+  title: "Chai Forms",
+  description: "Build beautiful forms in seconds.",
 };
 
 export default function RootLayout({

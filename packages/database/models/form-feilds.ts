@@ -25,7 +25,8 @@ export const fieldTypeEnum = pgEnum("field_type", [
   "date",
   "datetime",
   "time",
-  "dropdown"
+  "dropdown",
+  "rating"
 ]);
 
 export const formFieldsTable = pgTable("form_fields", {

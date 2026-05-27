@@ -30,21 +30,28 @@ import { Input } from "~/components/ui/input";
 import { FormWizard } from "./form-wizard";
 import { ThemeToggle } from "~/components/theme-toggle";
 
-export function Header({ formName, initialStatus, initialVisibility }: { formName: string, initialStatus: string, initialVisibility: string }) {
+import { IconSettings } from "@tabler/icons-react";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
+
+export function Header({ formName, initialStatus, initialVisibility, initialIsProtected, initialPassword }: { formName: string, initialStatus: string, initialVisibility: string, initialIsProtected?: boolean, initialPassword?: string | null }) {
   const { fields, formId } = useFormBuilder();
   const { updateStatusAsync, isPending: isPublishing } = useUpdateFormStatus();
 
   const [status, setStatus] = useState<"draft" | "published" | "archived" | "deleted">(initialStatus as any);
   const [visibility, setVisibility] = useState<"public" | "unlisted">(initialVisibility as any);
+  const [isProtected, setIsProtected] = useState(initialIsProtected || false);
+  const [password, setPassword] = useState(initialPassword || "");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/f/${formId}` : "";
 
   const handlePublishToggle = async () => {
     const newStatus = status === "published" ? "draft" : "published";
     try {
-      await updateStatusAsync({ formId, status: newStatus, visibility });
+      await updateStatusAsync({ formId, status: newStatus, visibility, isProtected, password });
       setStatus(newStatus);
       toast.success(`Form is now ${newStatus}`);
       if (newStatus === "published") {
@@ -57,11 +64,21 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
 
   const handleVisibilityToggle = async (newVisibility: "public" | "unlisted") => {
     try {
-      await updateStatusAsync({ formId, status, visibility: newVisibility });
+      await updateStatusAsync({ formId, status, visibility: newVisibility, isProtected, password });
       setVisibility(newVisibility);
       toast.success(`Visibility set to ${newVisibility}`);
     } catch (e) {
       toast.error("Failed to update visibility");
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    try {
+      await updateStatusAsync({ formId, status, visibility, isProtected, password });
+      toast.success("Settings saved successfully");
+      setIsSettingsModalOpen(false);
+    } catch (e) {
+      toast.error("Failed to save settings");
     }
   };
 
@@ -88,6 +105,11 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
           <Button variant="outline" size="sm" className="gap-2 rounded-full transition-all hover:bg-accent/50" onClick={() => setIsPreviewModalOpen(true)}>
             <IconEye className="size-4" />
             Preview
+          </Button>
+
+          <Button variant="outline" size="sm" className="gap-2 rounded-full transition-all hover:bg-accent/50" onClick={() => setIsSettingsModalOpen(true)}>
+            <IconSettings className="size-4" />
+            Settings
           </Button>
 
           {status === "published" && (
@@ -179,6 +201,48 @@ export function Header({ formName, initialStatus, initialVisibility }: { formNam
               } as any}
               isPreview={true}
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Form Settings</DialogTitle>
+            <DialogDescription>
+              Configure advanced settings for your form.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="protect-form" className="text-base font-semibold">Password Protection</Label>
+                <p className="text-sm text-muted-foreground">
+                  Require a password to view and submit this form.
+                </p>
+              </div>
+              <Switch
+                id="protect-form"
+                checked={isProtected}
+                onCheckedChange={setIsProtected}
+              />
+            </div>
+            
+            {isProtected && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                <Label htmlFor="form-password">Form Password</Label>
+                <Input
+                  id="form-password"
+                  type="text"
+                  placeholder="Enter a secure password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            )}
+
+            <Button onClick={handleSaveSettings} className="w-full">
+              Save Settings
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

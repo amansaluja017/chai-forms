@@ -1,7 +1,7 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { IconForms, IconTypography, IconNumber123, IconMail, IconPhone, IconMapPin, IconCheckbox, IconCircleDot, IconUpload, IconToggleLeft, IconCalendar, IconClock } from "@tabler/icons-react";
+import { IconForms, IconTypography, IconNumber123, IconMail, IconPhone, IconMapPin, IconCheckbox, IconCircleDot, IconUpload, IconToggleLeft, IconCalendar, IconClock, IconStar } from "@tabler/icons-react";
 import { useFormBuilder } from "./workspace/context";
 
 const FIELD_TYPES = [
@@ -17,6 +17,7 @@ const FIELD_TYPES = [
   { type: "date", label: "Date", icon: IconCalendar },
   { type: "time", label: "Time", icon: IconClock },
   { type: "dropdown", label: "Dropdown", icon: IconForms },
+  { type: "rating", label: "Rating", icon: IconStar },
 ];
 
 function DraggableTool({ type, label, icon: Icon }: { type: string, label: string, icon: any }) {

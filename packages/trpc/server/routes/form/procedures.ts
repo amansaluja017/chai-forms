@@ -1,11 +1,13 @@
-import { CreateFormInputType, FormIdInputType, UpdateFormInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, GetFormResponsesOutputType, GetPublicFormsOutputType, GenerateFormWithAIInputType } from "@repo/services/form/model";
+import { CreateFormInputType, FormIdInputType, UpdateFormInputType, SaveFormFieldsInputType, FormStatusType, CreateFormFieldInputType, UpdateFormFieldInputType, DeleteFormFieldInputType, ReorderFormFieldsInputType, SubmitFormResponseInputType, GetFormResponsesOutputType, GetPublicFormsOutputType, GenerateFormWithAIInputType, GetPublicFormWorkspaceInputType } from "@repo/services/form/model";
 import { formService } from "../../services";
 import { Context } from "../../context";
+import { requireRateLimit } from "../../utils/rate-limit";
 
 export const createFormProcedure = async ({ input, ctx }: { input: CreateFormInputType, ctx: Context }) => {
   if (!ctx.user) {
     throw new Error("No user found");
   }
+  await requireRateLimit(ctx, "create_form", 10, 3600); // 10 forms per hour
   return await formService.createForm(ctx.user.id, input);
 };
 
@@ -57,6 +59,7 @@ export const updateFormStatusProcedure = async ({ input, ctx }: { input: FormSta
 };
 
 export const createFormFieldProcedure = async ({ input, ctx }: { input: CreateFormFieldInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "create_field", 10, 60); // 30 fields per minute
   return await formService.createFormField(ctx.user!.id, input);
 };
 
@@ -72,11 +75,16 @@ export const reorderFormFieldsProcedure = async ({ input, ctx }: { input: Reorde
   return await formService.reorderFormFields(ctx.user!.id, input);
 };
 
-export const getPublicFormWorkspaceProcedure = async ({ input }: { input: FormIdInputType }) => {
+export const getPublicFormWorkspaceProcedure = async ({ input, ctx }: { input: GetPublicFormWorkspaceInputType, ctx: Context }) => {
+  if (input.password) {
+    await requireRateLimit(ctx, `form_password:${input.id}`, 5, 60); // 5 attempts per minute
+  }
   return await formService.getPublicFormWorkspace(input);
 };
 
-export const submitFormProcedure = async ({ input }: { input: SubmitFormResponseInputType }) => {
+export const submitFormProcedure = async ({ input, ctx }: { input: SubmitFormResponseInputType, ctx: Context }) => {
+  await requireRateLimit(ctx, "submit_form", 3, 60); // 5 submissions per minute
+
   return await formService.submitForm(input);
 };
 
@@ -92,5 +100,6 @@ export const generateFormWithAIProcedure = async ({ input, ctx }: { input: Gener
   if (!ctx.user) {
     throw new Error("No user found");
   }
+  await requireRateLimit(ctx, "generate_ai", 5, 3600); // 5 AI generations per hour
   return await formService.generateFormWithAI(ctx.user.id, input);
 };

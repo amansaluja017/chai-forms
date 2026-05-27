@@ -30,7 +30,7 @@ export const authRouter = router({
     .meta({ openapi: { method: "POST", path: getPath("/register"), tags: TAGS } })
     .input(registerWithEmailAndPasswordInputSchema)
     .output(registerWithEmailAndPasswordOutputSchema)
-    .mutation(async ({ input }) => await registerWithEmailAndPasswordProcedure({ input })),
+    .mutation(async ({ input, ctx }) => await registerWithEmailAndPasswordProcedure({ input, ctx })),
 
   verifyEmail: publicProcedure
     .meta({ openapi: { method: "POST", path: getPath("/verify-email"), tags: TAGS } })
@@ -48,7 +48,7 @@ export const authRouter = router({
     .meta({ openapi: { method: "POST", path: getPath("/password-reset-link"), tags: TAGS } })
     .input(passwordResetLinkInputSchema)
     .output(passwordResetLinkOutputSchema)
-    .mutation(async ({ input }) => await passwordResetLinkProcedure({ input })),
+    .mutation(async ({ input, ctx }) => await passwordResetLinkProcedure({ input, ctx })),
 
   resetPassword: publicProcedure
     .meta({ openapi: { method: "POST", path: getPath("/reset-password"), tags: TAGS } })
@@ -84,5 +84,5 @@ export const authRouter = router({
     .meta({ openapi: { method: "POST", path: getPath("/resend-2fa-code"), tags: TAGS } })
     .input(resend2FACodeInputSchema)
     .output(resend2FACodeOutputSchema)
-    .mutation(async ({ input }) => await resend2FACodeProcedure({ input })),
+    .mutation(async ({ input, ctx }) => await resend2FACodeProcedure({ input, ctx })),
 });

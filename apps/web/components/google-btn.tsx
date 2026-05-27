@@ -20,8 +20,12 @@ export default function GoogleButton() {
                     callback: async (response: any) => {
                         const result = await loginWithGoogleOAuthAsync({ token: response.credential });
 
-                        console.log(result, "result");
-                        router.push("/dashboard");
+
+                        if (result.user.role === "admin") {
+                            router.push("/dashboard");
+                        } else {
+                            router.push("/forms");
+                        }
                     },
                 });
 

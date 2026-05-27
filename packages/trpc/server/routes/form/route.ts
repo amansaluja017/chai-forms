@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema, getUserFormsOutputSchema, generateFormWithAIInputSchema } from "@repo/services/form/model";
+import { createFormInputSchema, formIdInputSchema, formOutputSchema, updateFormInputSchema, formWorkspaceOutputSchema, saveFormFieldsInputSchema, formStatusSchema, createFormFieldInputSchema, deleteFormFieldInputSchema, reorderFormFieldsInputSchema, submitFormResponseInputSchema, updateFormFieldInputSchema, getFormResponsesOutputSchema, getPublicFormsOutputSchema, getUserFormsOutputSchema, generateFormWithAIInputSchema, getPublicFormWorkspaceInputSchema, getPublicFormWorkspaceOutputSchema } from "@repo/services/form/model";
 import { protectedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import { createFormProcedure, deleteFormProcedure, getFormByIdProcedure, getFormsProcedure, updateFormProcedure, getFormWorkspaceProcedure, saveFormFieldsProcedure, updateFormStatusProcedure, createFormFieldProcedure, deleteFormFieldProcedure, reorderFormFieldsProcedure, getPublicFormWorkspaceProcedure, submitFormProcedure, updateFormFieldProcedure, getFormResponsesProcedure, getPublicFormsProcedure, generateFormWithAIProcedure } from "./procedures";
@@ -82,15 +82,15 @@ export const formRouter = router({
 
   getPublicFormWorkspace: publicProcedure
     .meta({ openapi: { method: "GET", path: getPath("/public/{id}"), tags: TAGS } })
-    .input(formIdInputSchema)
-    .output(formWorkspaceOutputSchema)
-    .query(async ({ input }) => await getPublicFormWorkspaceProcedure({ input })),
+    .input(getPublicFormWorkspaceInputSchema)
+    .output(getPublicFormWorkspaceOutputSchema)
+    .query(async ({ input, ctx }) => await getPublicFormWorkspaceProcedure({ input, ctx })),
 
   submitForm: publicProcedure
     .meta({ openapi: { method: "POST", path: getPath("/public/{formId}/submit"), tags: TAGS } })
     .input(submitFormResponseInputSchema)
     .output(z.object({ success: z.boolean() }))
-    .mutation(async ({ input }) => await submitFormProcedure({ input })),
+    .mutation(async ({ input, ctx }) => await submitFormProcedure({ input, ctx })),
 
   getFormResponses: protectedProcedure
     .meta({ openapi: { method: "GET", path: getPath("/{id}/responses"), tags: TAGS } })

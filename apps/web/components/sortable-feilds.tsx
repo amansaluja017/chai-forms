@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useFormBuilder } from "./workspace/context";
 import { FormFieldType } from "@repo/services/form/model";
-import { IconGripVertical, IconTrash, IconUpload } from "@tabler/icons-react";
+import { IconGripVertical, IconTrash, IconUpload, IconStarFilled } from "@tabler/icons-react";
 import { Button } from "~/components/ui/button";
 import { useDeleteFormField } from "~/hooks/api/form/form.hook";
 import { toast } from "sonner";
@@ -100,6 +100,13 @@ function SortableField({ field }: { field: FormFieldType }) {
             <div className="h-24 w-full border-2 border-dashed border-border/60 rounded-lg bg-background/30 flex flex-col items-center justify-center text-muted-foreground text-sm gap-2 transition-colors">
               <IconUpload className="size-5 opacity-50" />
               <span>Click to upload or drag and drop</span>
+            </div>
+          )}
+          {field.type === "rating" && (
+            <div className="flex gap-2 text-muted-foreground/30 mt-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <IconStarFilled key={i} className="size-6" />
+              ))}
             </div>
           )}
         </div>
