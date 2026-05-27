@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "dotenv -- tsx ./src/index.ts",
     "dev": "dotenv -- tsx watch ./src/index.ts",
-    "build": "tsup",
+    "build": "tsup src/index.ts --format esm,cjs",
     "lint": "eslint src/*"
   },
   "devDependencies": {

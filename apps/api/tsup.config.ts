@@ -2,7 +2,8 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["./src/index.ts"],
-  noExternal: ["@teachyst"], // transpile packages starting with `@teachyst` and their dependencies
+  noExternal: [/^@repo\//], // transpile workspace packages to avoid TS resolution errors in dist
+  external: ["bcrypt", "pg", "argon2"], // prevent native modules from being bundled
   splitting: false,
   bundle: true,
   outDir: "./dist",
